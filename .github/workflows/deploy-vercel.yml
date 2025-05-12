@@ -89,10 +89,11 @@ jobs:
       # Vercel deployment steps
       - name: Pull Vercel Environment Information
         run: |
-          # Ensure project name is lowercase
+          
+        # Ensure project name is lowercase
           PROJECT_NAME=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
           echo "Using project name: $PROJECT_NAME"
-          npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }} --scope="jonaswips-projects" --project=$PROJECT_NAME
+          run: npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }} --project=$PROJECT_NAME
 
       - name: Build Project Artifacts
         env:
