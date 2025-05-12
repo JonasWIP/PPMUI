@@ -1,6 +1,6 @@
 # SupaNext Template
 
-A modern, production-ready template for building web applications with Next.js and Supabase, featuring TypeScript and Tailwind CSS.
+A modern,  production-ready template for building web applications with Next.js and Supabase, featuring TypeScript and Tailwind CSS.
 
 ## Overview
 
