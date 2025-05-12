@@ -98,13 +98,13 @@ jobs:
           echo "Using project name: $PROJECT_NAME"
           
           # Try to pull existing project configuration
-          if ! npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }} --scope="jonaswips-projects"; then
+          if ! npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}; then
             echo "Failed to pull project configuration. Creating new project..."
             # Create new project
-            npx vercel link --yes --token=${{ secrets.VERCEL_TOKEN }} --scope="jonaswips-projects" --name="$PROJECT_NAME"
+            npx vercel link --yes --token=${{ secrets.VERCEL_TOKEN }} --name="$PROJECT_NAME"
             
             # Pull again after linking
-            npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }} --scope="jonaswips-projects"
+            npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
           fi
 
       - name: Build Project Artifacts

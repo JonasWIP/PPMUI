@@ -3,6 +3,7 @@ import PageContainer from '@/components/layout/PageContainer';
 import PageHeader from '@/components/layout/PageHeader';
 import RestApiExample from '@/components/RestApiExample';
 import ClientApiExample from './ClientApiExample';
+import ProjectsApiExample from './ProjectsApiExample';
 
 // Define metadata for this page
 export const metadata = {
@@ -56,6 +57,39 @@ const { data } = await supabase.from('table').select('*');`}
         </Card>
 
         <ClientApiExample serverDataCount={5} />
+
+        <Card className="p-6">
+          <h2 className="text-xl font-bold mb-4">Projects API Client Example</h2>
+          <p className="text-muted-foreground mb-4">
+            This example demonstrates using the generated OpenAPI client for the Projects API.
+          </p>
+          
+          <ProjectsApiExample />
+          
+          <div className="mt-6">
+            <h3 className="font-medium mb-2">How it works:</h3>
+            <ul className="list-disc pl-5 text-muted-foreground">
+              <li className="mb-1">Uses the generated TypeScript client from the OpenAPI specification</li>
+              <li className="mb-1">Provides strongly-typed API calls with full IntelliSense support</li>
+              <li className="mb-1">Integrates with the existing API utility patterns</li>
+              <li>Handles errors consistently across the application</li>
+            </ul>
+            
+            <div className="bg-muted border border-border rounded p-4 mt-4">
+              <h4 className="font-medium mb-1">Code example:</h4>
+              <p className="text-sm text-muted-foreground mb-2">Client Component</p>
+              <pre className="text-sm overflow-x-auto">
+                <code>
+                  {`import { projectsApi } from '@/lib/projectsApi';
+
+// List all projects
+const response = await projectsApi.listProjects();
+console.log(response.directories);`}
+                </code>
+              </pre>
+            </div>
+          </div>
+        </Card>
       </div>
     </PageContainer>
   );
