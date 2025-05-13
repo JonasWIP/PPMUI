@@ -40,10 +40,10 @@ async function verifyAdminAccess() {
 // GET handler for getting project config
 export async function GET(
   request: Request,
-  { params }: { params: { projectName: string } }
+  context: { params: Promise<{ projectName: string }> }
 ) {
   try {
-    const { projectName } = params;
+    const { projectName } = await context.params;
     
     // Verify admin access
     const accessCheck = await verifyAdminAccess();
@@ -73,10 +73,10 @@ export async function GET(
 // DELETE handler for deleting a project
 export async function DELETE(
   request: Request,
-  { params }: { params: { projectName: string } }
+  context: { params: Promise<{ projectName: string }> }
 ) {
   try {
-    const { projectName } = params;
+    const { projectName } = await context.params;
     
     // Verify admin access
     const accessCheck = await verifyAdminAccess();
@@ -106,10 +106,10 @@ export async function DELETE(
 // PUT handler for updating project config
 export async function PUT(
   request: Request,
-  { params }: { params: { projectName: string } }
+  context: { params: Promise<{ projectName: string }> }
 ) {
   try {
-    const { projectName } = params;
+    const { projectName } = await context.params;
     
     // Verify admin access
     const accessCheck = await verifyAdminAccess();

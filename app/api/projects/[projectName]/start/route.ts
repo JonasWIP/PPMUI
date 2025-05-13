@@ -23,10 +23,10 @@ async function checkAdminAccess() {
 // POST handler for starting a project
 export async function POST(
   request: Request,
-  { params }: { params: { projectName: string } }
+  context: { params: Promise<{ projectName: string }> }
 ) {
   try {
-    const { projectName } = params;
+    const { projectName } = await context.params;
     
     // Get the user from the session
     const supabase = await SupabaseServerHelper.createServerClient();
