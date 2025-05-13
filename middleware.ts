@@ -18,8 +18,8 @@ export async function middleware(request: NextRequest) {
   const apiRoutes = ['/api/auth'];
   
   // Check for exact match on root path or startsWith for other paths
-  const isPublicRoute = 
-    path === '/' || 
+  const isPublicRoute =
+    path === '/' ||
     publicRoutes.some(route => path === route || path.startsWith(`${route}/`)) ||
     apiRoutes.some(route => path.startsWith(route));
     
@@ -27,6 +27,12 @@ export async function middleware(request: NextRequest) {
   if (isPublicRoute) {
     return response;
   }
+  
+  // Define admin-only routes
+  const adminRoutes = ['/api-test', '/admin'];
+  const isAdminRoute = adminRoutes.some(route =>
+    path === route || path.startsWith(`${route}/`)
+  );
   
   // Check if Supabase environment variables are available
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -59,6 +65,26 @@ export async function middleware(request: NextRequest) {
       url.pathname = '/login';
       return NextResponse.redirect(url);
     }
+    
+    // For admin routes, check if the user has admin role
+    if (isAdminRoute) {
+      const { data: hasAdminRole } = await supabase.rpc(
+        'current_user_has_role',
+        { role_name: 'admin' }
+      );
+      
+      const { data: hasSuperAdminRole } = await supabase.rpc(
+        'current_user_has_role',
+        { role_name: 'superadmin' }
+      );
+      
+      if (!hasAdminRole && !hasSuperAdminRole) {
+        // Redirect non-admin users to dashboard
+        const url = request.nextUrl.clone();
+        url.pathname = '/dashboard';
+        return NextResponse.redirect(url);
+      }
+    }
   } catch (error) {
     console.error(`💥 Middleware error: ${error instanceof Error ? error.message : String(error)}`);
     // On error, redirect to the root page which contains setup instructions
@@ -75,6 +101,10 @@ export const config = {
   matcher: [
     // Explicitly protect the dashboard route
     '/dashboard/:path*',
+    
+    // Explicitly protect admin routes
+    '/api-test/:path*',
+    '/admin/:path*',
     
     // Match other routes except for:
     // - _next (Next.js internals)

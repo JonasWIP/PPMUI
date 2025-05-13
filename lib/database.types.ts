@@ -60,6 +60,67 @@ export type Database = {
           username?: string | null
         }
         Relationships: []
+      },
+      roles: {
+        Row: {
+          id: number
+          name: string
+          description: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: number
+          name: string
+          description?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: number
+          name?: string
+          description?: string | null
+          created_at?: string | null
+        }
+        Relationships: []
+      },
+      user_roles: {
+        Row: {
+          user_id: string
+          role_id: number
+          created_at: string | null
+          assigned_by: string | null
+        }
+        Insert: {
+          user_id: string
+          role_id: number
+          created_at?: string | null
+          assigned_by?: string | null
+        }
+        Update: {
+          user_id?: string
+          role_id?: number
+          created_at?: string | null
+          assigned_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_role_id_fkey"
+            columns: ["role_id"]
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_assigned_by_fkey"
+            columns: ["assigned_by"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {
@@ -74,6 +135,19 @@ export type Database = {
           user_full_name?: string
         }
         Returns: undefined
+      },
+      has_role: {
+        Args: {
+          user_id: string
+          role_name: string
+        }
+        Returns: boolean
+      },
+      current_user_has_role: {
+        Args: {
+          role_name: string
+        }
+        Returns: boolean
       }
     }
     Enums: {

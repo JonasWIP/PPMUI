@@ -1,61 +1,64 @@
 /**
  * Projects API Client
- * 
- * This file provides a wrapper around the generated Projects API client
- * to make it easier to use in the application.
+ *
+ * This file provides a client for the server-side Projects API routes.
+ * All API requests are made through server-side API routes for security.
  */
 
-import { OpenAPI, ProjectsService } from './generated';
 import { ApiError } from './api';
+import { OpenAPI } from './generated';
 
 /**
- * ProjectsApiClient class provides a wrapper around the generated ProjectsService
- * with additional functionality for authentication and error handling.
+ * Configure the OpenAPI instance for server-side use
+ * This function should be used in all server-side API routes
+ * to ensure consistent configuration
+ */
+export const configureProjectsApi = () => {
+  // Set the base URL for the Projects API
+  OpenAPI.BASE = process.env.NEXT_PUBLIC_PROJECTS_API_URL || 'http://localhost:2020';
+  
+  // Get the token from environment variables
+  const token = process.env.NEXT_PUBLIC_PROJECTS_API_TOKEN || '';
+  
+  // Set the token for Bearer authentication
+  OpenAPI.TOKEN = token;
+  
+  // Add a log to help with debugging
+  console.log(`Configuring Projects API with base URL: ${OpenAPI.BASE}`);
+
+  
+  OpenAPI.WITH_CREDENTIALS = false;
+  
+  // Add custom headers including a direct Authorization header
+  // This ensures the header is sent even if the token validation fails
+  OpenAPI.HEADERS = {
+    'X-API-Source': 'server-side-route',
+    'Authorization': `Bearer ${token || 'dev-default-token'}`
+  };
+};
+
+/**
+ * ProjectsApiClient class provides methods to interact with the Projects API
+ * through server-side API routes.
  */
 export class ProjectsApiClient {
-  private apiUrl: string;
-  private apiKey: string;
-
-  constructor() {
-    // Initialize from environment variables
-    this.apiUrl = process.env.NEXT_PUBLIC_PROJECTS_API_URL || 'http://localhost:2020';
-    this.apiKey = process.env.NEXT_PUBLIC_PROJECTS_API_TOKEN || '';
-    
-    // Configure the OpenAPI instance
-    this.configureOpenAPI();
-  }
-
-  /**
-   * Configure the OpenAPI instance with the API URL and token
-   */
-  private configureOpenAPI(): void {
-    OpenAPI.BASE = this.apiUrl;
-    OpenAPI.TOKEN = this.apiKey;
-    OpenAPI.WITH_CREDENTIALS = false;
-  }
-
-  /**
-   * Set the API key manually (overrides the environment variable)
-   */
-  public setApiKey(apiKey: string): void {
-    this.apiKey = apiKey;
-    OpenAPI.TOKEN = apiKey;
-  }
-
-  /**
-   * Set the API URL manually (overrides the environment variable)
-   */
-  public setApiUrl(apiUrl: string): void {
-    this.apiUrl = apiUrl;
-    OpenAPI.BASE = apiUrl;
-  }
-
   /**
    * List all projects
    */
   public async listProjects() {
     try {
-      return await ProjectsService.getProjects();
+      const response = await fetch('/api/projects');
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new ApiError(
+          response.status,
+          errorData.error || 'Failed to list projects',
+          errorData
+        );
+      }
+      
+      return await response.json();
     } catch (error) {
       this.handleApiError(error);
       throw error;
@@ -83,10 +86,24 @@ export class ProjectsApiClient {
     }
   ) {
     try {
-      return await ProjectsService.postProjectsInitialize({
-        projectName,
-        requestBody: options
+      const response = await fetch(`/api/projects/${projectName}/initialize`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(options),
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new ApiError(
+          response.status,
+          errorData.error || 'Failed to initialize project',
+          errorData
+        );
+      }
+      
+      return await response.json();
     } catch (error) {
       this.handleApiError(error);
       throw error;
@@ -104,10 +121,24 @@ export class ProjectsApiClient {
     }
   ) {
     try {
-      return await ProjectsService.postProjectsDeploy({
-        projectName,
-        requestBody: options
+      const response = await fetch(`/api/projects/${projectName}/deploy`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(options),
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new ApiError(
+          response.status,
+          errorData.error || 'Failed to deploy project',
+          errorData
+        );
+      }
+      
+      return await response.json();
     } catch (error) {
       this.handleApiError(error);
       throw error;
@@ -119,7 +150,20 @@ export class ProjectsApiClient {
    */
   public async startProject(projectName: string) {
     try {
-      return await ProjectsService.postProjectsStart({ projectName });
+      const response = await fetch(`/api/projects/${projectName}/start`, {
+        method: 'POST',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new ApiError(
+          response.status,
+          errorData.error || 'Failed to start project',
+          errorData
+        );
+      }
+      
+      return await response.json();
     } catch (error) {
       this.handleApiError(error);
       throw error;
@@ -131,7 +175,20 @@ export class ProjectsApiClient {
    */
   public async stopProject(projectName: string) {
     try {
-      return await ProjectsService.postProjectsStop({ projectName });
+      const response = await fetch(`/api/projects/${projectName}/stop`, {
+        method: 'POST',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new ApiError(
+          response.status,
+          errorData.error || 'Failed to stop project',
+          errorData
+        );
+      }
+      
+      return await response.json();
     } catch (error) {
       this.handleApiError(error);
       throw error;
@@ -149,9 +206,24 @@ export class ProjectsApiClient {
     }
   ) {
     try {
-      return await ProjectsService.postProjectsClone({
-        requestBody: options
+      const response = await fetch('/api/projects/clone', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(options),
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new ApiError(
+          response.status,
+          errorData.error || 'Failed to clone repository',
+          errorData
+        );
+      }
+      
+      return await response.json();
     } catch (error) {
       this.handleApiError(error);
       throw error;
@@ -166,12 +238,27 @@ export class ProjectsApiClient {
     instructions?: string
   ) {
     try {
-      return await ProjectsService.postProjectsCreate({
-        requestBody: {
+      const response = await fetch('/api/projects/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           projectName,
           instructions
-        }
+        }),
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new ApiError(
+          response.status,
+          errorData.error || 'Failed to create project',
+          errorData
+        );
+      }
+      
+      return await response.json();
     } catch (error) {
       this.handleApiError(error);
       throw error;
@@ -183,7 +270,20 @@ export class ProjectsApiClient {
    */
   public async deleteProject(projectName: string) {
     try {
-      return await ProjectsService.deleteProjects({ projectName });
+      const response = await fetch(`/api/projects/${projectName}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new ApiError(
+          response.status,
+          errorData.error || 'Failed to delete project',
+          errorData
+        );
+      }
+      
+      return await response.json();
     } catch (error) {
       this.handleApiError(error);
       throw error;
@@ -195,7 +295,18 @@ export class ProjectsApiClient {
    */
   public async getProjectConfig(projectName: string) {
     try {
-      return await ProjectsService.getProjectsConfig({ projectName });
+      const response = await fetch(`/api/projects/${projectName}`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new ApiError(
+          response.status,
+          errorData.error || 'Failed to get project config',
+          errorData
+        );
+      }
+      
+      return await response.json();
     } catch (error) {
       this.handleApiError(error);
       throw error;
@@ -220,10 +331,24 @@ export class ProjectsApiClient {
     }
   ) {
     try {
-      return await ProjectsService.putProjectsConfig({
-        projectName,
-        requestBody: config
+      const response = await fetch(`/api/projects/${projectName}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(config),
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new ApiError(
+          response.status,
+          errorData.error || 'Failed to update project config',
+          errorData
+        );
+      }
+      
+      return await response.json();
     } catch (error) {
       this.handleApiError(error);
       throw error;
@@ -239,22 +364,7 @@ export class ProjectsApiClient {
       throw error;
     }
 
-    // If it's the generated ApiError, convert it to our ApiError
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'name' in error &&
-      error.name === 'ApiError' &&
-      'status' in error
-    ) {
-      throw new ApiError(
-        Number(error.status),
-        'message' in error && typeof error.message === 'string' ? error.message : 'API Error',
-        'body' in error ? error.body : undefined
-      );
-    }
-
-    // For other errors, wrap them in our ApiError
+    // For fetch errors or other errors, wrap them in our ApiError
     throw new ApiError(
       500,
       error instanceof Error ? error.message : 'Unknown API error',

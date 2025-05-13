@@ -17,7 +17,7 @@ export default function NavbarWithAuth({
     { label: 'Contact', href: '/contact' },
   ]
 }: NavbarWithAuthProps) {
-  const { isAuthenticated, userName, isLoading, signOut } = useAuth();
+  const { isAuthenticated, userName, isLoading, signOut, isAdmin } = useAuth();
 
   if (isLoading) {
     // Return a simplified navbar during loading
@@ -25,15 +25,19 @@ export default function NavbarWithAuth({
       <nav className="bg-background border-b border-border shadow-sm">
         <div className="container mx-auto flex justify-between items-center px-4 py-4">
           <div className="text-xl font-bold text-foreground">{logo}</div>
-        </div>
-      </nav>
+        </div>      </nav>
     );
   }
+  
+  // Add API Test link for admin users
+  const navLinks = isAdmin 
+    ? [...links, { label: 'API Test', href: '/api-test' }]
+    : links;
 
   return (
     <Navbar
       logo={logo}
-      links={links}
+      links={navLinks}
       isAuthenticated={isAuthenticated}
       onLogout={signOut}
       userName={userName}

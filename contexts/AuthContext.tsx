@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import { getCurrentUser, getUserProfile, signOut as supabaseSignOut } from '@/lib/supabase';
+import { getCurrentUser, getUserProfile, signOut as supabaseSignOut, getSupabaseClient } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
 type User = {
@@ -25,6 +25,14 @@ type AuthContextType = {
   isLoading: boolean;
   isAuthenticated: boolean;
   userName: string | null;
+  
+  // New properties
+  roles: string[];
+  isAdmin: boolean;
+  isSuperAdmin: boolean;
+  isMember: boolean;
+  hasRole: (roleName: string) => boolean;
+  
   refreshAuth: () => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -36,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [userName, setUserName] = useState<string | null>(null);
+  const [roles, setRoles] = useState<string[]>([]);
   const router = useRouter();
 
   const refreshAuth = async () => {
@@ -49,6 +58,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userProfile = await getUserProfile();
         setProfile(userProfile);
         
+        // Fetch user roles
+        const supabase = getSupabaseClient();
+        const { data: userRoles } = await supabase
+          .from('user_roles')
+          .select('role_id, roles(name)')
+          .eq('user_id', currentUser.id);
+          
+        if (userRoles) {
+          const roleNames = userRoles.map(ur => ur.roles.name);
+          setRoles(roleNames);
+        } else {
+          setRoles([]);
+        }
+        
+        // Set username
         if (userProfile) {
           setUserName(userProfile.username || userProfile.full_name || currentUser.email || 'User');
         } else {
@@ -58,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         setProfile(null);
         setUserName(null);
+        setRoles([]);
       }
     } catch (error) {
       console.error('Error refreshing auth status:', error);
@@ -66,12 +91,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Helper function to check if user has a specific role
+  const hasRole = (roleName: string): boolean => {
+    return roles.includes(roleName);
+  };
+  
+  // Provide role-based convenience properties
+  const isAdmin = hasRole('admin') || hasRole('superadmin');
+  const isSuperAdmin = hasRole('superadmin');
+  const isMember = hasRole('member') || isAdmin;
+  
   const signOut = async () => {
     try {
       await supabaseSignOut();
       setUser(null);
       setProfile(null);
       setUserName(null);
+      setRoles([]);
       router.push('/');
     } catch (error) {
       console.error('Error signing out:', error);
@@ -101,6 +137,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading,
     isAuthenticated: !!user,
     userName,
+    
+    // New values
+    roles,
+    isAdmin,
+    isSuperAdmin,
+    isMember,
+    hasRole,
+    
     refreshAuth,
     signOut
   };
