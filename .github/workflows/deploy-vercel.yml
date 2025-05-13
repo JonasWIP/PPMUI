@@ -105,16 +105,48 @@ jobs:
             
             # Pull again after linking
             npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-          fi
-
-      - name: Build Project Artifacts
+          fi      - name: Build Project Artifacts
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_PROJECTS_API_URL: ${{ secrets.NEXT_PUBLIC_PROJECTS_API_URL }}
+          NEXT_PUBLIC_PROJECTS_API_TOKEN: ${{ secrets.NEXT_PUBLIC_PROJECTS_API_TOKEN }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          NEXT_PUBLIC_FEATURE_AUTH: ${{ secrets.NEXT_PUBLIC_FEATURE_AUTH }}
+          NEXT_PUBLIC_FEATURE_ANALYTICS: ${{ secrets.NEXT_PUBLIC_FEATURE_ANALYTICS }}
+          NODE_ENV: production
         run: |
           export NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
           export NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
-          npx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          export NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+          export NEXT_PUBLIC_PROJECTS_API_URL=$NEXT_PUBLIC_PROJECTS_API_URL
+          export NEXT_PUBLIC_PROJECTS_API_TOKEN=$NEXT_PUBLIC_PROJECTS_API_TOKEN
+          export NEXTAUTH_SECRET=$NEXTAUTH_SECRET
+          export NEXTAUTH_URL=$NEXTAUTH_URL
+          export NEXT_PUBLIC_FEATURE_AUTH=$NEXT_PUBLIC_FEATURE_AUTH
+          export NEXT_PUBLIC_FEATURE_ANALYTICS=$NEXT_PUBLIC_FEATURE_ANALYTICS
+          export NODE_ENV=production
+          npx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}      # Set environment variables in Vercel project configuration
+      - name: Set Vercel Environment Variables
+        run: |
+          echo "Setting environment variables in Vercel project configuration..."
+          
+          # Use vercel env add to set the environment variables
+          # This only needs to be done once per variable, but is idempotent (won't fail if var exists)
+          echo "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" | npx vercel env add NEXT_PUBLIC_SUPABASE_URL production --token=${{ secrets.VERCEL_TOKEN }} || true
+          echo "${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" | npx vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY production --token=${{ secrets.VERCEL_TOKEN }} || true
+          echo "${{ secrets.NEXT_PUBLIC_API_URL }}" | npx vercel env add NEXT_PUBLIC_API_URL production --token=${{ secrets.VERCEL_TOKEN }} || true
+          echo "${{ secrets.NEXT_PUBLIC_PROJECTS_API_URL }}" | npx vercel env add NEXT_PUBLIC_PROJECTS_API_URL production --token=${{ secrets.VERCEL_TOKEN }} || true
+          echo "${{ secrets.NEXT_PUBLIC_PROJECTS_API_TOKEN }}" | npx vercel env add NEXT_PUBLIC_PROJECTS_API_TOKEN production --token=${{ secrets.VERCEL_TOKEN }} || true
+          echo "${{ secrets.NEXTAUTH_SECRET }}" | npx vercel env add NEXTAUTH_SECRET production --token=${{ secrets.VERCEL_TOKEN }} || true
+          echo "${{ secrets.NEXTAUTH_URL }}" | npx vercel env add NEXTAUTH_URL production --token=${{ secrets.VERCEL_TOKEN }} || true
+          echo "${{ secrets.NEXT_PUBLIC_FEATURE_AUTH }}" | npx vercel env add NEXT_PUBLIC_FEATURE_AUTH production --token=${{ secrets.VERCEL_TOKEN }} || true
+          echo "${{ secrets.NEXT_PUBLIC_FEATURE_ANALYTICS }}" | npx vercel env add NEXT_PUBLIC_FEATURE_ANALYTICS production --token=${{ secrets.VERCEL_TOKEN }} || true
+          
+          # Ensure environment variables are applied
+          npx vercel env pull --yes --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy to Vercel
         run: npx vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
