@@ -1,0 +1,42 @@
+import { render } from '@testing-library/react';
+import DashboardPage from '../../dashboard/page';
+
+// Mock the next/navigation hooks
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+  }),
+}));
+
+// Mock the lib/supabase module
+jest.mock('../../../lib/supabase', () => {
+  const mockSupabaseClient = {
+    from: jest.fn().mockReturnValue({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockResolvedValue({
+        data: [{ role_id: 1, roles: { name: 'User' } }]
+      })
+    }),
+  };
+
+  return {
+    getCurrentUser: jest.fn().mockResolvedValue({ 
+      id: 'test-user-id', 
+      email: 'test@example.com' 
+    }),
+    getUserProfile: jest.fn().mockResolvedValue({
+      id: 'test-profile-id',
+      user_id: 'test-user-id',
+      username: 'testuser',
+    }),
+    signOut: jest.fn(),
+    getSupabaseClient: jest.fn().mockReturnValue(mockSupabaseClient)
+  };
+});
+
+describe('DashboardPage', () => {
+  it('renders without crashing', () => {
+    // This basic test just checks if the component renders without errors
+    expect(() => render(<DashboardPage />)).not.toThrow();
+  });
+});

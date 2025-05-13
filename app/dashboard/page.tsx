@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getCurrentUser, getUserProfile, signOut } from '../../lib/supabase';
+import { getCurrentUser, getUserProfile, signOut, getSupabaseClient } from '../../lib/supabase';
 import { useRouter } from 'next/navigation';
 import { Database } from '../../lib/database.types';
 import UserProfile from '@/components/dashboard/UserProfile';
@@ -49,9 +49,8 @@ export default function DashboardPage() {
           // Get user profile via Supabase client
           const userProfile = await getUserProfile();
           setProfile(userProfile);
-          
-          // Get user roles
-          const supabase = await import('../../lib/supabase').then(mod => mod.getSupabaseClient());
+            // Get user roles
+          const supabase = getSupabaseClient();
           const { data: userRoles } = await supabase
             .from('user_roles')
             .select('role_id, roles(name)')

@@ -1,5 +1,4 @@
 import PageContainer from '@/components/layout/PageContainer';
-import PageHeader from '@/components/layout/PageHeader';
 import { ClientEnvInitializer } from '@/components/setup/ClientEnvInitializer';
 export default function HomePage() {
   // Pass environment variables to client (only NEXT_PUBLIC_ ones)
