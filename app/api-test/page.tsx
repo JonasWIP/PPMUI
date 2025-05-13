@@ -27,8 +27,11 @@ async function getServerData() {
     if (err instanceof ApiError) {
       errorMessage = `API Error (${err.status}): ${err.message}`;
     } else {
-      errorMessage = `Unexpected error: ${err instanceof Error ? err.message : String(err)}`;
-    }
+      if (err instanceof Error) {
+        errorMessage = `Unexpected error: ${err.message}\nStack trace: ${err.stack || 'No stack trace available'}`;
+      } else {
+        errorMessage = `Unexpected error: ${String(err)}`;
+      }}
     
     return {
       projects: null,
