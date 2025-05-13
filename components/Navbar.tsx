@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Button } from '@/components/ui/button';
+import { Menu, X } from 'lucide-react';
 
 type NavbarProps = {
   logo?: string;
@@ -23,6 +24,12 @@ const Navbar: React.FC<NavbarProps> = ({
     link.href !== '/dashboard' || isAuthenticated
   );
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
   return (
     <nav className="bg-background border-b border-border shadow-sm">
       <div className="container mx-auto flex justify-between items-center px-4 py-4">
@@ -32,11 +39,21 @@ const Navbar: React.FC<NavbarProps> = ({
           </Link>
         </div>
         
-        <div className="flex items-center">
+        {/* Mobile menu button */}
+        <button
+          className="md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground"
+          onClick={toggleMobileMenu}
+          aria-label="Toggle menu"
+        >
+          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+        
+        {/* Desktop navigation */}
+        <div className="hidden md:flex items-center">
           <ul className="flex space-x-6 mr-6">
             {filteredLinks.map((link, index) => (
               <li key={index}>
-                <Link 
+                <Link
                   href={link.href}
                   className="text-muted-foreground hover:text-foreground transition duration-300"
                 >
@@ -80,6 +97,28 @@ const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
       </div>
+      
+      {/* Mobile menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-border">
+          <ul className="flex flex-col space-y-3 p-4">
+            {filteredLinks.map((link, index) => (
+              <li key={index}>
+                <Link
+                  href={link.href}
+                  className="text-muted-foreground hover:text-foreground transition duration-300 block"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+            <li className="pt-2">
+              <ThemeToggle />
+            </li>
+          </ul>
+        </div>
+      )}
     </nav>
   );
 };

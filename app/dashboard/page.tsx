@@ -23,9 +23,18 @@ type AuthUser = {
 // Use generated type from database.types.ts for user profile
 type UserProfile = Database['public']['Tables']['user_profiles']['Row'];
 
+// Define type for user roles
+type UserRole = {
+  role_id: number;
+  roles: {
+    name: string;
+  };
+};
+
 export default function DashboardPage() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [roles, setRoles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -40,6 +49,18 @@ export default function DashboardPage() {
           // Get user profile via Supabase client
           const userProfile = await getUserProfile();
           setProfile(userProfile);
+          
+          // Get user roles
+          const supabase = await import('../../lib/supabase').then(mod => mod.getSupabaseClient());
+          const { data: userRoles } = await supabase
+            .from('user_roles')
+            .select('role_id, roles(name)')
+            .eq('user_id', currentUser.id);
+            
+          if (userRoles && userRoles.length > 0) {
+            const roleNames = userRoles.map((ur: UserRole) => ur.roles?.name).filter(Boolean);
+            setRoles(roleNames);
+          }
         } else {
           // Redirect to login if no user is found
           router.push('/login');
@@ -101,16 +122,16 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* User Information */}
         <div className="md:col-span-2 space-y-6">
-          <UserProfile user={user} profile={profile} />
+          <UserProfile user={user} profile={profile} roles={roles} />
           
           <Card>
             <CardHeader>
               <CardTitle>Quick Links</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Link href="/examples">
+              <Link href="/impressum">
                 <Button variant="secondary" className="w-full">
-                  View Examples
+                  Contact Information
                 </Button>
               </Link>
               <Link href="/">

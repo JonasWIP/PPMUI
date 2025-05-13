@@ -73,26 +73,24 @@ export default function RootLayout({
       <body className="flex flex-col min-h-screen bg-background text-foreground antialiased">
         <ThemeProvider defaultTheme="default">
           <AuthProvider>
-            <NavbarWithAuth 
-              logo="SupaNext"
+            <NavbarWithAuth
+              logo="PPM"
               links={[
                 { label: 'Home', href: '/' },
                 { label: 'Dashboard', href: '/dashboard' },
-                { label: 'Examples', href: '/examples' },
-                { label: 'About', href: '/about' },
-                { label: 'Contact', href: '/contact' },
+                { label: 'Contact', href: '/impressum' },
               ]}
             />
             <main className="flex-grow">
               {children}
             </main>
             <Footer
-              companyName="SupaNext"
+              companyName="PPM"
               links={[
                 { label: 'Home', href: '/' },
-                { label: 'About', href: '/about' },
                 { label: 'Terms', href: '/terms' },
                 { label: 'Privacy', href: '/privacy' },
+                { label: 'Impressum', href: '/impressum' },
               ]}
             />
           </AuthProvider>

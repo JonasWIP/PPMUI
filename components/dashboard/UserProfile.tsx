@@ -11,16 +11,17 @@ type UserProfileProps = {
     email?: string;
   } | null;
   profile: {
-    id: string; 
+    id: string;
     full_name: string | null;
     username: string | null;
     avatar_url: string | null;
     created_at: string | null;
     updated_at: string | null;
   } | null;
+  roles?: string[];
 };
 
-export default function UserProfile({ user, profile }: UserProfileProps) {
+export default function UserProfile({ user, profile, roles = [] }: UserProfileProps) {
   if (!user) return null;
 
   return (
@@ -68,6 +69,14 @@ export default function UserProfile({ user, profile }: UserProfileProps) {
                 label="Last Updated"
                 value={profile.updated_at ? new Date(profile.updated_at).toLocaleDateString() : 'Never'}
               />
+              
+              {/* Display user roles */}
+              {roles.length > 0 && (
+                <ProfileField
+                  label="Role"
+                  value={roles.join(', ')}
+                />
+              )}
             </>
           )}
         </div>

@@ -9,12 +9,11 @@ type NavbarWithAuthProps = {
 };
 
 export default function NavbarWithAuth({
-  logo = 'SupaNext',
+  logo = 'PPM',
   links = [
     { label: 'Home', href: '/' },
     { label: 'Dashboard', href: '/dashboard' },
-    { label: 'About', href: '/about' },
-    { label: 'Contact', href: '/contact' },
+    { label: 'Contact', href: '/impressum' },
   ]
 }: NavbarWithAuthProps) {
   const { isAuthenticated, userName, isLoading, signOut, isAdmin } = useAuth();
