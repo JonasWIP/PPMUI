@@ -3,7 +3,9 @@ import type { Metadata, Viewport } from 'next';
 import { CONFIG } from '@/lib/constants';
 import NavbarWithAuth from '@/components/NavbarWithAuth';
 import Footer from '@/components/Footer';
+import CookieBanner from '@/components/CookieBanner';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { CookieConsentProvider } from '@/contexts/CookieConsentContext';
 import { ThemeProvider } from '@/components/ui/theme-provider';
 
 // Import Google fonts for our theme system
@@ -72,28 +74,32 @@ export default function RootLayout({
     >
       <body className="flex flex-col min-h-screen bg-background text-foreground antialiased">
         <ThemeProvider defaultTheme="default">
-          <AuthProvider>
-            <NavbarWithAuth
-              logo="PPM"
-              links={[
-                { label: 'Home', href: '/' },
-                { label: 'Dashboard', href: '/dashboard' },
-                { label: 'Contact', href: '/impressum' },
-              ]}
-            />
-            <main className="flex-grow">
-              {children}
-            </main>
-            <Footer
-              companyName="PPM"
-              links={[
-                { label: 'Home', href: '/' },
-                { label: 'Terms', href: '/terms' },
-                { label: 'Privacy', href: '/privacy' },
-                { label: 'Impressum', href: '/impressum' },
-              ]}
-            />
-          </AuthProvider>
+          <CookieConsentProvider>
+            <AuthProvider>
+              <NavbarWithAuth
+                logo="PPM"
+                links={[
+                  { label: 'Home', href: '/' },
+                  { label: 'Dashboard', href: '/dashboard' },
+                  { label: 'Contact', href: '/impressum' },
+                ]}
+              />
+              <main className="flex-grow">
+                {children}
+              </main>
+              <Footer
+                companyName="PPM"
+                links={[
+                  { label: 'Home', href: '/' },
+                  { label: 'Terms', href: '/terms' },
+                  { label: 'Privacy', href: '/privacy' },
+                  { label: 'Cookie Preferences', href: '/cookie-preferences' },
+                  { label: 'Impressum', href: '/impressum' },
+                ]}
+              />
+              <CookieBanner />
+            </AuthProvider>
+          </CookieConsentProvider>
         </ThemeProvider>
       </body>
     </html>

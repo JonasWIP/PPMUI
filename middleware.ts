@@ -14,7 +14,7 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   
   // Check if we're already on the login page or other public routes to prevent redirect loops
-  const publicRoutes = ['/', '/login', '/register', '/forgot-password'];
+  const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/cookie-preferences', '/privacy', '/terms', '/impressum'];
   const apiRoutes = ['/api/auth'];
   
   // Check for exact match on root path or startsWith for other paths

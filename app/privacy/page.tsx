@@ -51,7 +51,25 @@ export default function PrivacyPage() {
             These third parties have access to your personal information only to perform these tasks on our behalf and are obligated not to disclose or use it for any other purpose.
           </p>
           
-          <h3>5. Your Data Protection Rights</h3>
+          <h3>5. Cookie Policy</h3>
+          <p>
+            Our website uses cookies to enhance your browsing experience. Cookies are small text files that are stored on your device when you visit our website.
+          </p>
+          
+          <h4>Types of Cookies We Use</h4>
+          <ul>
+            <li><strong>Essential Cookies:</strong> These cookies are necessary for the website to function properly and cannot be disabled.</li>
+            <li><strong>Analytics Cookies:</strong> These cookies help us understand how visitors interact with our website, allowing us to improve our services.</li>
+            <li><strong>Marketing Cookies:</strong> These cookies are used to track visitors across websites for advertising purposes.</li>
+            <li><strong>Preferences Cookies:</strong> These cookies allow the website to remember choices you make and provide enhanced features.</li>
+          </ul>
+          
+          <h4>Managing Your Cookie Preferences</h4>
+          <p>
+            You can manage your cookie preferences at any time by clicking on the &quot;Cookie Preferences&quot; link in the footer or by using the cookie banner that appears when you first visit our website.
+          </p>
+          
+          <h3>6. Your Data Protection Rights</h3>
           <p>
             You have the right to:
           </p>
