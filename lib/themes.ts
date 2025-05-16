@@ -204,10 +204,92 @@ export const forestGreenTheme: ThemeDefinition = {
   radius: "0.25rem",
 };
 
+// New modern theme
+export const modernTheme: ThemeDefinition = {
+  name: "modern",
+  displayName: "Modern",
+  cssClass: "theme-modern",
+  isDark: false,
+  colors: {
+    background: "0 0% 100%",
+    foreground: "222.2 47.4% 11.2%",
+    card: "0 0% 100%",
+    cardForeground: "222.2 47.4% 11.2%",
+    popover: "0 0% 100%",
+    popoverForeground: "222.2 47.4% 11.2%",
+    primary: "222.2 47.4% 11.2%",
+    primaryForeground: "210 40% 98%",
+    secondary: "210 40% 96.1%",
+    secondaryForeground: "222.2 47.4% 11.2%",
+    muted: "210 40% 96.1%",
+    mutedForeground: "215.4 16.3% 46.9%",
+    accent: "210 40% 96.1%",
+    accentForeground: "222.2 47.4% 11.2%",
+    destructive: "0 100% 50%",
+    destructiveForeground: "210 40% 98%",
+    border: "214.3 31.8% 91.4%",
+    input: "214.3 31.8% 91.4%",
+    ring: "215 20.2% 65.1%",
+    chart1: "222.2 47.4% 25.2%",
+    chart2: "210 40% 50%", 
+    chart3: "215.4 16.3% 36.9%",
+    chart4: "0 0% 40%",
+    chart5: "222.2 47.4% 40.2%",
+  },
+  fonts: {
+    body: "var(--font-inter), system-ui, sans-serif",
+    heading: "var(--font-inter), system-ui, sans-serif",
+    mono: "var(--font-jetbrains-mono), monospace",
+  },
+  radius: "0.5rem",
+};
+
+// Modern dark theme
+export const modernDarkTheme: ThemeDefinition = {
+  name: "modern-dark",
+  displayName: "Modern Dark",
+  cssClass: "theme-modern-dark",
+  isDark: true,
+  colors: {
+    background: "224 71% 4%",
+    foreground: "213 31% 91%",
+    card: "224 71% 4%",
+    cardForeground: "213 31% 91%",
+    popover: "224 71% 4%",
+    popoverForeground: "215 20.2% 65.1%",
+    primary: "210 40% 98%",
+    primaryForeground: "222.2 47.4% 1.2%",
+    secondary: "222.2 47.4% 11.2%",
+    secondaryForeground: "210 40% 98%",
+    muted: "223 47% 11%",
+    mutedForeground: "215.4 16.3% 56.9%",
+    accent: "216 34% 17%",
+    accentForeground: "210 40% 98%",
+    destructive: "0 63% 31%",
+    destructiveForeground: "210 40% 98%",
+    border: "216 34% 17%",
+    input: "216 34% 17%",
+    ring: "216 34% 17%",
+    chart1: "210 40% 70%",
+    chart2: "213 31% 60%", 
+    chart3: "215 20.2% 50%",
+    chart4: "222.2 47.4% 40%",
+    chart5: "210 40% 40%",
+  },
+  fonts: {
+    body: "var(--font-inter), system-ui, sans-serif",
+    heading: "var(--font-inter), system-ui, sans-serif",
+    mono: "var(--font-jetbrains-mono), monospace",
+  },
+  radius: "0.5rem",
+};
+
 // All available themes
 export const themes = [
   defaultTheme,
   darkTheme,
   blueSapphireTheme,
   forestGreenTheme,
+  modernTheme,
+  modernDarkTheme,
 ];

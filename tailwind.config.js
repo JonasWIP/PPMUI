@@ -5,7 +5,7 @@ module.exports = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  darkMode: ['media', 'class'], // Use media queries for dark mode instead of class-based
+  darkMode: "selector", // Use selector-based dark mode
   theme: {
   	extend: {
   		borderRadius: {
@@ -101,6 +101,7 @@ module.exports = {
   	}
   },
   plugins: [
+    // Using require because this is a JS file not an ESM module
     require('@tailwindcss/forms'),
     require('@tailwindcss/typography'),
     require("tailwindcss-animate")
