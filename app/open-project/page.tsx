@@ -1,13 +1,13 @@
 'use client'
 
 import React from 'react'
-import CyberpunkDashboard from '@/components/cyberpunk/Dashboard'
+import CyberpunkOpenProject from '@/components/cyberpunk/OpenProject'
 import CyberpunkLayout from '@/components/cyberpunk/Layout'
 
-export default function DashboardPage() {
+export default function OpenProjectPage() {
   return (
     <CyberpunkLayout>
-      <CyberpunkDashboard />
+      <CyberpunkOpenProject />
     </CyberpunkLayout>
   )
 }

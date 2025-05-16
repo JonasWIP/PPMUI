@@ -246,6 +246,46 @@ export const modernDarkTheme: ThemeDefinition = {
   radius: "0.5rem",
 };
 
+// Cyberpunk theme
+export const cyberpunkTheme: ThemeDefinition = {
+  name: "cyberpunk",
+  displayName: "Cyberpunk",
+  cssClass: "theme-cyberpunk",
+  isDark: true,
+  colors: {
+    background: "0 0% 0%",
+    foreground: "180 100% 50%",
+    card: "240 17% 5%",
+    cardForeground: "180 100% 50%",
+    popover: "240 17% 5%",
+    popoverForeground: "180 100% 50%",
+    primary: "180 100% 50%",
+    primaryForeground: "0 0% 0%",
+    secondary: "270 100% 50%",
+    secondaryForeground: "0 0% 0%",
+    muted: "240 17% 14%",
+    mutedForeground: "180 70% 40%",
+    accent: "270 100% 50%",
+    accentForeground: "0 0% 0%",
+    destructive: "0 100% 50%",
+    destructiveForeground: "0 0% 0%",
+    border: "240 17% 14%",
+    input: "240 17% 14%",
+    ring: "180 100% 50%",
+    chart1: "180 100% 50%",
+    chart2: "270 100% 50%",
+    chart3: "0 100% 50%",
+    chart4: "120 100% 50%",
+    chart5: "60 100% 50%",
+  },
+  fonts: {
+    body: "var(--font-jetbrains-mono), monospace",
+    heading: "var(--font-jetbrains-mono), monospace",
+    mono: "var(--font-jetbrains-mono), monospace",
+  },
+  radius: "0.25rem",
+};
+
 // All available themes
 export const themes = [
   defaultTheme,
@@ -253,4 +293,5 @@ export const themes = [
   blueSapphireTheme,
   forestGreenTheme,
   modernDarkTheme,
+  cyberpunkTheme,
 ];

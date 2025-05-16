@@ -315,6 +315,40 @@
     --font-heading: var(--font-inter), system-ui, sans-serif;
     --font-mono: var(--font-jetbrains-mono), monospace;
   }
+  
+  /* Cyberpunk theme */
+  .theme-cyberpunk {
+    --background: 0 0% 0%;
+    --foreground: 180 100% 50%;
+    --card: 240 17% 5%;
+    --card-foreground: 180 100% 50%;
+    --popover: 240 17% 5%;
+    --popover-foreground: 180 100% 50%;
+    --primary: 180 100% 50%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 270 100% 50%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 240 17% 14%;
+    --muted-foreground: 180 70% 40%;
+    --accent: 270 100% 50%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 0%;
+    --border: 240 17% 14%;
+    --input: 240 17% 14%;
+    --ring: 180 100% 50%;
+    --chart-1: 180 100% 50%;
+    --chart-2: 270 100% 50%;
+    --chart-3: 0 100% 50%;
+    --chart-4: 120 100% 50%;
+    --chart-5: 60 100% 50%;
+    --radius: 0.25rem;
+    
+    --font-body: var(--font-jetbrains-mono), monospace;
+    --font-heading: var(--font-jetbrains-mono), monospace;
+    --font-mono: var(--font-jetbrains-mono), monospace;
+  }
+  
   :root {
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;

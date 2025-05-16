@@ -1,13 +1,13 @@
 'use client'
 
 import React from 'react'
-import CyberpunkDashboard from '@/components/cyberpunk/Dashboard'
+import CyberpunkLocalDevelopment from '@/components/cyberpunk/LocalDevelopment'
 import CyberpunkLayout from '@/components/cyberpunk/Layout'
 
-export default function DashboardPage() {
+export default function LocalDevelopmentPage() {
   return (
     <CyberpunkLayout>
-      <CyberpunkDashboard />
+      <CyberpunkLocalDevelopment />
     </CyberpunkLayout>
   )
 }
