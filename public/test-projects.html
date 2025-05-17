@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projects Component Test</title>
+  <script>
+    // Mock API response for testing
+    window.mockApiResponse = {
+      status: 'success',
+      message: 'Projects retrieved successfully',
+      directories: [
+        'project1',
+        'project2',
+        'template-test',
+        'archived-old'
+      ]
+    };
+
+    // Mock API response with projects array instead of directories
+    window.mockProjectsApiResponse = {
+      status: 'success',
+      message: 'Projects retrieved successfully',
+      projects: [
+        'project1',
+        'project2',
+        'template-test',
+        'archived-old'
+      ]
+    };
+
+    // Mock the projectsApi
+    window.projectsApi = {
+      listProjects: function() {
+        console.log('Mock API called');
+        return Promise.resolve(window.mockApiResponse);
+      },
+      startProject: function(projectName) {
+        console.log('Start project called with:', projectName);
+        return Promise.resolve({ status: 'success' });
+      }
+    };
+
+    // Function to change the mock response
+    function changeResponse(type) {
+      if (type === 'empty') {
+        window.mockApiResponse.directories = [];
+        window.mockApiResponse.projects = [];
+      } else if (type === 'null') {
+        window.mockApiResponse.directories = null;
+        window.mockApiResponse.projects = null;
+      } else if (type === 'error') {
+        window.projectsApi.listProjects = function() {
+          return Promise.reject(new Error('API error'));
+        };
+      } else if (type === 'projects-array') {
+        // Use the projects array response instead of directories
+        window.projectsApi.listProjects = function() {
+          return Promise.resolve(window.mockProjectsApiResponse);
+        };
+      } else {
+        window.mockApiResponse.directories = [
+          'project1',
+          'project2',
+          'template-test',
+          'archived-old'
+        ];
+        window.projectsApi.listProjects = function() {
+          return Promise.resolve(window.mockApiResponse);
+        };
+      }
+      
+      // Clear the console output
+      document.getElementById('console-output').textContent = '';
+      
+      // Reload the component simulation
+      simulateProjectsComponent();
+    }
+  </script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .test-controls {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-controls h2 {
+      margin-top: 0;
+    }
+    button {
+      padding: 8px 12px;
+      margin-right: 10px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #3a80d2;
+    }
+    #projects-container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="test-controls">
+    <h2>Projects Component Test</h2>
+    <p>Use these controls to test different API response scenarios:</p>
+    <button onclick="changeResponse('normal')">Normal Response (directories)</button>
+    <button onclick="changeResponse('projects-array')">Projects Array Response</button>
+    <button onclick="changeResponse('empty')">Empty Arrays</button>
+    <button onclick="changeResponse('null')">Null Arrays</button>
+    <button onclick="changeResponse('error')">API Error</button>
+  </div>
+  
+  <div id="projects-container">
+    <!-- The Projects component will be rendered here -->
+    <p>Loading Projects component...</p>
+  </div>
+
+  <script>
+    // This script would normally load the React component
+    // For this test page, we're just showing the console logs
+    console.log('Test page loaded');
+    console.log('Mock API response:', window.mockApiResponse);
+    
+    // In a real implementation, we would render the React component here
+    document.getElementById('projects-container').innerHTML = `
+      <div>
+        <h3>Console Output:</h3>
+        <pre id="console-output" style="background: #f0f0f0; padding: 10px; border-radius: 4px; overflow: auto; max-height: 300px;"></pre>
+        
+        <h3>Mock Projects:</h3>
+        <div id="mock-projects"></div>
+      </div>
+    `;
+    
+    // Capture console.log and display in the page
+    const originalLog = console.log;
+    const originalError = console.error;
+    const consoleOutput = document.getElementById('console-output');
+    
+    console.log = function() {
+      originalLog.apply(console, arguments);
+      const args = Array.from(arguments).map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
+      );
+      consoleOutput.textContent += args.join(' ') + '\n';
+    };
+    
+    console.error = function() {
+      originalError.apply(console, arguments);
+      const args = Array.from(arguments).map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
+      );
+      consoleOutput.textContent += 'ERROR: ' + args.join(' ') + '\n';
+    };
+    
+    // Simulate the Projects component behavior
+    async function simulateProjectsComponent() {
+      try {
+        console.log('Fetching projects...');
+        const data = await window.projectsApi.listProjects();
+        
+        console.log('API Response:', data);
+        
+        // Check if directories or projects array exists and is not empty
+        const projectsArray = data?.directories || data?.projects;
+        
+        if (!projectsArray || !Array.isArray(projectsArray)) {
+          console.error('API response does not contain a valid projects or directories array:', data);
+          document.getElementById('mock-projects').innerHTML = `
+            <div style="background-color: #ffebee; color: #c62828; padding: 10px; border-radius: 4px;">
+              Invalid API response format. Please try again later.
+            </div>
+          `;
+          return;
+        }
+        
+        console.log('Projects from API:', projectsArray);
+        
+        // Extract projects array from the response and map to Project objects
+        const projectsList = projectsArray.map((name) => ({
+          name,
+          description: 'Mock description for ' + name,
+          status: 'New',
+          lastUpdated: new Date().toISOString(),
+          isTemplate: name.startsWith('template-'),
+          isArchived: name.startsWith('archived-'),
+        })) || [];
+        
+        console.log('Mapped Projects:', projectsList);
+        
+        // Display the projects
+        if (projectsList.length === 0) {
+          document.getElementById('mock-projects').innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #757575;">
+              No projects found. <a href="#" style="color: #4a90e2;">Create a new project?</a>
+            </div>
+          `;
+        } else {
+          const projectsHtml = projectsList.map(project => `
+            <div style="border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 10px; overflow: hidden;">
+              <div style="padding: 15px; border-bottom: 1px solid #e0e0e0; background-color: #f9f9f9;">
+                <div style="display: flex; justify-content: space-between;">
+                  <h3 style="margin: 0; color: #4a90e2;">${project.name}</h3>
+                  <span style="padding: 2px 8px; font-size: 12px; border-radius: 4px; background-color: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb;">
+                    ${project.status}
+                  </span>
+                </div>
+                <p style="margin-top: 8px; color: #757575; font-size: 14px;">
+                  ${project.description}
+                </p>
+              </div>
+              <div style="padding: 15px;">
+                <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px;">
+                  <span style="color: #757575;">Last Updated:</span>
+                  <span style="color: #4a90e2;">Just now</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px;">
+                  <span style="color: #757575;">Status:</span>
+                  <span style="color: #4a90e2;">${project.status}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px;">
+                  <span style="color: #757575;">Type:</span>
+                  <span style="color: #4a90e2;">
+                    ${project.isTemplate ? 'Template' : project.isArchived ? 'Archived' : 'Regular'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          `).join('');
+          
+          document.getElementById('mock-projects').innerHTML = projectsHtml;
+        }
+      } catch (err) {
+        console.error('Failed to fetch projects:', err);
+        document.getElementById('mock-projects').innerHTML = `
+          <div style="background-color: #ffebee; color: #c62828; padding: 10px; border-radius: 4px;">
+            Failed to load projects. Please try again later.
+          </div>
+        `;
+      }
+    }
+    
+    // Run the simulation
+    simulateProjectsComponent();
+  </script>
+</body>
+</html>

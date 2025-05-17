@@ -1,10 +1,122 @@
 'use client'
 
-import React from 'react'
-import { Plus, GitBranch, Github, ExternalLink, Download } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Plus, GitBranch, Github, ExternalLink, Download, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { projectsApi } from '@/lib/projectsApi'
+import { useRouter } from 'next/navigation'
+
+// Define project type based on API response
+type Project = {
+  name: string;
+  description?: string;
+  status?: string;
+  lastUpdated?: string;
+  isTemplate?: boolean;
+  isArchived?: boolean;
+  repoUrl?: string;
+  ticketsCount?: number;
+};
+
+type TabType = 'projects' | 'templates' | 'archived';
 
 const Projects = () => {
+  const router = useRouter();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabType>('projects');
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setLoading(true);
+        const data = await projectsApi.listProjects();
+        
+        console.log('API Response:', data);
+        
+        // Check if directories or projects array exists and is not empty
+        const projectsArray = data?.directories || data?.projects;
+        
+        if (!projectsArray || !Array.isArray(projectsArray)) {
+          console.error('API response does not contain a valid projects or directories array:', data);
+          setError('Invalid API response format. Please try again later.');
+          return;
+        }
+        
+        console.log('Projects from API:', projectsArray);
+        
+        // Extract projects array from the response and map to Project objects
+        const projectsList = projectsArray.map((name: string) => ({
+          name,
+          // Default values for other properties
+          description: '',
+          status: 'New',
+          lastUpdated: new Date().toISOString(),
+          isTemplate: name.startsWith('template-'),
+          isArchived: name.startsWith('archived-'),
+        })) || [];
+        
+        console.log('Mapped Projects:', projectsList);
+        
+        setProjects(projectsList);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch projects:', err);
+        setError('Failed to load projects. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  const startProject = async (projectName: string) => {
+    try {
+      await projectsApi.startProject(projectName);
+      router.push(`/development?project=${projectName}`);
+    } catch (err) {
+      console.error('Failed to start project:', err);
+      // Could add toast notification here
+    }
+  };
+
+  // Filter projects based on active tab
+  const filteredProjects = projects.filter(project => {
+    if (activeTab === 'templates') return project.isTemplate === true;
+    if (activeTab === 'archived') return project.isArchived === true;
+    // Default tab (projects) - show non-template, non-archived projects
+    return !project.isTemplate && !project.isArchived;
+  });
+  
+  console.log('Active Tab:', activeTab);
+  console.log('Projects State:', projects);
+  console.log('Filtered Projects:', filteredProjects);
+
+  // Helper function to format date
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'Unknown';
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+    if (diffInHours < 48) return 'Yesterday';
+    return `${Math.floor(diffInHours / 24)} days ago`;
+  };
+
+  // Add debug log before rendering
+  console.log('Debug - Projects:', {
+    projectsLength: projects.length,
+    filteredProjectsLength: filteredProjects.length,
+    activeTab,
+    isLoading: loading,
+    hasError: !!error
+  });
+
   return (
     <div className="p-6 w-full">
       <div className="flex items-center justify-between mb-8">
@@ -25,160 +137,117 @@ const Projects = () => {
       </div>
       <div className="mb-6">
         <div className="flex items-center space-x-2 text-sm mb-4">
-          <button className="px-4 py-1.5 bg-primary/20 border border-primary/30 text-primary rounded-md">
+          <button
+            className={`px-4 py-1.5 rounded-md ${activeTab === 'projects' ? 'bg-primary/20 border border-primary/30 text-primary' : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'}`}
+            onClick={() => setActiveTab('projects')}
+          >
             Projects
           </button>
-          <button className="px-4 py-1.5 bg-muted text-muted-foreground rounded-md hover:bg-muted/80 hover:text-foreground">
+          <button
+            className={`px-4 py-1.5 rounded-md ${activeTab === 'templates' ? 'bg-primary/20 border border-primary/30 text-primary' : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'}`}
+            onClick={() => setActiveTab('templates')}
+          >
             Templates
           </button>
-          <button className="px-4 py-1.5 bg-muted text-muted-foreground rounded-md hover:bg-muted/80 hover:text-foreground">
+          <button
+            className={`px-4 py-1.5 rounded-md ${activeTab === 'archived' ? 'bg-primary/20 border border-primary/30 text-primary' : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'}`}
+            onClick={() => setActiveTab('archived')}
+          >
             Archived
           </button>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Project Card 1 */}
-        <div className="bg-card border border-border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all">
-          <div className="p-5 border-b border-border bg-muted/50">
-            <div className="flex justify-between items-start">
-              <h3 className="text-xl font-medium text-primary">
-                Project Alpha
-              </h3>
-              <span className="px-2 py-1 text-xs bg-green-500/10 text-green-500 rounded-md border border-green-500/30">
-                Active
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">
-              Neural interface for direct brain-computer interaction
-            </p>
-          </div>
-          <div className="p-5 space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Last Updated:</span>
-              <span className="text-primary">2 hours ago</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Status:</span>
-              <span className="text-green-500">Running</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Tickets:</span>
-              <span className="text-primary">12 open</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Repo:</span>
-              <a href="#" className="text-primary flex items-center">
-                <Github className="h-3 w-3 mr-1" />
-                View
-              </a>
-            </div>
-          </div>
-          <div className="flex border-t border-border">
-            <Link href="/development" className="flex-1 text-center py-3 text-sm text-primary hover:bg-primary/10 transition-colors flex items-center justify-center" >
-              <ExternalLink className="h-4 w-4 mr-1.5" />
-              Open
-            </Link>
-            <Link href="/development" className="flex-1 text-center py-3 text-sm text-secondary hover:bg-secondary/10 transition-colors border-l border-border flex items-center justify-center" >
-              <GitBranch className="h-4 w-4 mr-1.5" />
-              Develop
-            </Link>
-          </div>
+      
+      {loading ? (
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="h-8 w-8 text-primary animate-spin" />
+          <span className="ml-2 text-primary">Loading projects...</span>
         </div>
-        {/* Project Card 2 */}
-        <div className="bg-card border border-border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all">
-          <div className="p-5 border-b border-border bg-muted/50">
-            <div className="flex justify-between items-start">
-              <h3 className="text-xl font-medium text-primary">
-                Project Beta
-              </h3>
-              <span className="px-2 py-1 text-xs bg-yellow-500/10 text-yellow-500 rounded-md border border-yellow-500/30">
-                In Progress
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">
-              Augmented reality overlay system for urban environments
-            </p>
-          </div>
-          <div className="p-5 space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Last Updated:</span>
-              <span className="text-primary">Yesterday</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Status:</span>
-              <span className="text-yellow-500">Building</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Tickets:</span>
-              <span className="text-primary">8 open</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Repo:</span>
-              <a href="#" className="text-primary flex items-center">
-                <Github className="h-3 w-3 mr-1" />
-                View
-              </a>
-            </div>
-          </div>
-          <div className="flex border-t border-border">
-            <Link href="/development" className="flex-1 text-center py-3 text-sm text-primary hover:bg-primary/10 transition-colors flex items-center justify-center" >
-              <ExternalLink className="h-4 w-4 mr-1.5" />
-              Open
-            </Link>
-            <Link href="/development" className="flex-1 text-center py-3 text-sm text-secondary hover:bg-secondary/10 transition-colors border-l border-border flex items-center justify-center" >
-              <GitBranch className="h-4 w-4 mr-1.5" />
-              Develop
-            </Link>
-          </div>
+      ) : error ? (
+        <div className="bg-destructive/10 border border-destructive/30 text-destructive p-4 rounded-md">
+          {error}
         </div>
-        {/* Project Card 3 */}
-        <div className="bg-card border border-border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all">
-          <div className="p-5 border-b border-border bg-muted/50">
-            <div className="flex justify-between items-start">
-              <h3 className="text-xl font-medium text-primary">
-                Project Gamma
-              </h3>
-              <span className="px-2 py-1 text-xs bg-blue-500/10 text-blue-500 rounded-md border border-blue-500/30">
-                New
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">
-              Cybernetic implant control software
-            </p>
-          </div>
-          <div className="p-5 space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Last Updated:</span>
-              <span className="text-primary">3 days ago</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Status:</span>
-              <span className="text-blue-500">Setup</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Tickets:</span>
-              <span className="text-primary">4 open</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Repo:</span>
-              <a href="#" className="text-primary flex items-center">
-                <Github className="h-3 w-3 mr-1" />
-                View
-              </a>
-            </div>
-          </div>
-          <div className="flex border-t border-border">
-            <Link href="/development" className="flex-1 text-center py-3 text-sm text-primary hover:bg-primary/10 transition-colors flex items-center justify-center" >
-              <ExternalLink className="h-4 w-4 mr-1.5" />
-              Open
+      ) : filteredProjects.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          No {activeTab} found.
+          {activeTab === 'projects' && (
+            <Link href="/create-project" className="text-primary ml-1 hover:underline">
+              Create a new project?
             </Link>
-            <Link href="/development" className="flex-1 text-center py-3 text-sm text-secondary hover:bg-secondary/10 transition-colors border-l border-border flex items-center justify-center" >
-              <GitBranch className="h-4 w-4 mr-1.5" />
-              Develop
-            </Link>
-          </div>
+          )}
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredProjects.map((project) => (
+            <div key={project.name} className="bg-card border border-border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all">
+              <div className="p-5 border-b border-border bg-muted/50">
+                <div className="flex justify-between items-start">
+                  <h3 className="text-xl font-medium text-primary">
+                    {project.name}
+                  </h3>
+                  <span className={`px-2 py-1 text-xs rounded-md border ${
+                    project.status === 'Running' ? 'bg-green-500/10 text-green-500 border-green-500/30' :
+                    project.status === 'Building' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30' :
+                    'bg-blue-500/10 text-blue-500 border-blue-500/30'
+                  }`}>
+                    {project.status || 'New'}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {project.description || 'No description available'}
+                </p>
+              </div>
+              <div className="p-5 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Last Updated:</span>
+                  <span className="text-primary">{formatDate(project.lastUpdated)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Status:</span>
+                  <span className={
+                    project.status === 'Running' ? 'text-green-500' :
+                    project.status === 'Building' ? 'text-yellow-500' :
+                    'text-blue-500'
+                  }>
+                    {project.status || 'Setup'}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Tickets:</span>
+                  <span className="text-primary">{project.ticketsCount || 0} open</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Repo:</span>
+                  {project.repoUrl ? (
+                    <a href={project.repoUrl} className="text-primary flex items-center" target="_blank" rel="noopener noreferrer">
+                      <Github className="h-3 w-3 mr-1" />
+                      View
+                    </a>
+                  ) : (
+                    <span className="text-muted-foreground">Not available</span>
+                  )}
+                </div>
+              </div>
+              <div className="flex border-t border-border">
+                <Link
+                  href={`/open-project?project=${project.name}`}
+                  className="flex-1 text-center py-3 text-sm text-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
+                >
+                  <ExternalLink className="h-4 w-4 mr-1.5" />
+                  Open
+                </Link>
+                <button
+                  onClick={() => startProject(project.name)}
+                  className="flex-1 text-center py-3 text-sm text-secondary hover:bg-secondary/10 transition-colors border-l border-border flex items-center justify-center"
+                >
+                  <GitBranch className="h-4 w-4 mr-1.5" />
+                  Develop
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

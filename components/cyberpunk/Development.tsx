@@ -1,20 +1,27 @@
 'use client'
 
-import React from 'react'
-import { ArrowLeft, GitBranch, GitCommit, GitPullRequest, Code, Terminal, Play, Download } from 'lucide-react'
+import React, { useState } from 'react'
+import { ArrowLeft, Terminal, Play } from 'lucide-react'
 import Link from 'next/link'
+import ChatInterface from './ChatInterface'
+import PreviewPanel from './PreviewPanel'
 
 const Development = () => {
+  const [projectName] = useState('PROJECT_ALPHA')
+  const [previewUrl] = useState('https://preview.example.com/demo')
+  const [liveUrl] = useState('https://live.example.com')
+
   return (
-    <div className="p-6 w-full">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-6 w-full h-[calc(100vh-64px)] flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <Link href="/projects" className="text-muted-foreground hover:text-primary mr-3">
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <h1 className="text-3xl font-bold text-primary tracking-wider">
             DEV<span className="text-secondary">::</span>
-            <span className="text-primary/90">PROJECT_ALPHA</span>
+            <span className="text-primary/90">{projectName}</span>
           </h1>
         </div>
         <div className="flex space-x-3">
@@ -29,65 +36,20 @@ const Development = () => {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Development Area */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-card border border-border rounded-lg p-5 shadow-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl text-primary font-medium tracking-wide">
-                Repository Status
-              </h2>
-              <div className="flex items-center space-x-2 text-sm">
-                <span className="text-muted-foreground">Branch:</span>
-                <span className="px-2 py-0.5 bg-secondary/10 text-secondary rounded border border-secondary/30 flex items-center">
-                  <GitBranch className="h-3 w-3 mr-1" />
-                  feature/neural-interface
-                </span>
-              </div>
-            </div>
-            
-            <div className="bg-muted border border-border rounded-md p-4 font-mono text-sm text-foreground/80 mb-4">
-              <div className="flex items-center text-green-500">
-                <GitBranch className="h-4 w-4 mr-2" />
-                <span>On branch feature/neural-interface</span>
-              </div>
-              <div className="mt-2 text-primary">
-                Your branch is up to date with &apos;origin/feature/neural-interface&apos;
-              </div>
-              <div className="mt-2">
-                Changes not staged for commit:
-              </div>
-              <div className="text-destructive ml-4">modified: src/components/NeuralInterface.tsx</div>
-              <div className="text-destructive ml-4">modified: src/utils/brainwave-analyzer.ts</div>
-              <div className="mt-2">
-                Untracked files:
-              </div>
-              <div className="text-destructive ml-4">src/components/BrainwaveVisualizer.tsx</div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button className="flex items-center justify-center px-4 py-2 bg-muted border border-primary/30 rounded-md hover:bg-muted/80 hover:border-primary/50 transition-all text-primary">
-                <GitCommit className="h-4 w-4 mr-2" />
-                Commit Changes
-              </button>
-              <button className="flex items-center justify-center px-4 py-2 bg-muted border border-secondary/30 rounded-md hover:bg-muted/80 hover:border-secondary/50 transition-all text-secondary">
-                <GitPullRequest className="h-4 w-4 mr-2" />
-                Create Pull Request
-              </button>
-            </div>
-          </div>
-          
-          <div className="bg-card border border-border rounded-lg p-5 shadow-md">
-            <h2 className="text-xl text-primary font-medium tracking-wide mb-4">
-              Code Editor
-            </h2>
-            <div className="flex items-center space-x-2 text-sm mb-3">
-              <span className="text-muted-foreground">File:</span>
-              <span className="text-primary">src/components/NeuralInterface.tsx</span>
-            </div>
-            <div className="bg-muted border border-border rounded-md p-4 font-mono text-sm text-foreground/80 h-80 overflow-y-auto">
-              <pre className="text-gray-400">
-{`import React, { useState, useEffect } from 'react';
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden">
+        {/* Chat Interface */}
+        <div className="lg:w-1/3 h-full">
+          <ChatInterface projectName={projectName} />
+        </div>
+        
+        {/* Preview Panel */}
+        <div className="lg:w-2/3 h-full">
+          <PreviewPanel 
+            projectName={projectName}
+            previewUrl={previewUrl}
+            liveUrl={liveUrl}
+            codeContent={`import React, { useState, useEffect } from 'react';
 import { analyzeBrainwaves } from '../utils/brainwave-analyzer';
 import { NeuralData, BrainwavePattern } from '../types';
 
@@ -170,116 +132,7 @@ export const NeuralInterface: React.FC<NeuralInterfaceProps> = ({
     </div>
   );
 };`}
-              </pre>
-            </div>
-          </div>
-        </div>
-        
-        {/* Sidebar */}
-        <div className="space-y-6">
-          <div className="bg-card border border-border rounded-lg p-5 shadow-md">
-            <h2 className="text-xl text-primary font-medium tracking-wide mb-4">
-              Project Files
-            </h2>
-            <div className="space-y-1 font-mono text-sm">
-              <div className="flex items-center text-primary font-medium">
-                <span className="mr-2">📁</span>
-                src/
-              </div>
-              <div className="flex items-center text-muted-foreground ml-4">
-                <span className="mr-2">📁</span>
-                components/
-              </div>
-              <div className="flex items-center text-primary ml-8 bg-primary/10 px-2 py-0.5 rounded">
-                <span className="mr-2">📄</span>
-                NeuralInterface.tsx
-              </div>
-              <div className="flex items-center text-muted-foreground ml-8">
-                <span className="mr-2">📄</span>
-                BrainwaveVisualizer.tsx
-              </div>
-              <div className="flex items-center text-muted-foreground ml-8">
-                <span className="mr-2">📄</span>
-                Dashboard.tsx
-              </div>
-              <div className="flex items-center text-muted-foreground ml-4">
-                <span className="mr-2">📁</span>
-                utils/
-              </div>
-              <div className="flex items-center text-muted-foreground ml-8">
-                <span className="mr-2">📄</span>
-                brainwave-analyzer.ts
-              </div>
-              <div className="flex items-center text-muted-foreground ml-4">
-                <span className="mr-2">📁</span>
-                types/
-              </div>
-              <div className="flex items-center text-muted-foreground ml-8">
-                <span className="mr-2">📄</span>
-                index.ts
-              </div>
-              <div className="flex items-center text-muted-foreground ml-4">
-                <span className="mr-2">📄</span>
-                App.tsx
-              </div>
-              <div className="flex items-center text-muted-foreground ml-4">
-                <span className="mr-2">📄</span>
-                index.tsx
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-card border border-border rounded-lg p-5 shadow-md">
-            <h2 className="text-xl text-primary font-medium tracking-wide mb-4">
-              Recent Commits
-            </h2>
-            <div className="space-y-3">
-              <div className="border-l-2 border-secondary pl-3">
-                <div className="flex items-center text-sm">
-                  <GitCommit className="h-3 w-3 mr-2 text-secondary" />
-                  <span className="text-secondary">a4f8e2d</span>
-                </div>
-                <p className="text-primary text-sm">Add neural data types</p>
-                <p className="text-xs text-muted-foreground">2 hours ago by Sarah Chen</p>
-              </div>
-              <div className="border-l-2 border-primary pl-3">
-                <div className="flex items-center text-sm">
-                  <GitCommit className="h-3 w-3 mr-2 text-primary" />
-                  <span className="text-primary">b7d9c1e</span>
-                </div>
-                <p className="text-primary text-sm">Implement brainwave analyzer</p>
-                <p className="text-xs text-muted-foreground">Yesterday by Alex Kim</p>
-              </div>
-              <div className="border-l-2 border-green-500 pl-3">
-                <div className="flex items-center text-sm">
-                  <GitCommit className="h-3 w-3 mr-2 text-green-500" />
-                  <span className="text-green-500">f2e1d9c</span>
-                </div>
-                <p className="text-primary text-sm">Initial neural interface setup</p>
-                <p className="text-xs text-muted-foreground">2 days ago by Jordan Lee</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-card border border-border rounded-lg p-5 shadow-md">
-            <h2 className="text-xl text-primary font-medium tracking-wide mb-4">
-              Actions
-            </h2>
-            <div className="space-y-2">
-              <button className="w-full flex items-center justify-between px-4 py-2 bg-muted border border-border rounded-md hover:bg-muted/80 hover:border-primary/50 transition-all">
-                <span className="text-primary">Open in VS Code</span>
-                <Code className="h-4 w-4 text-muted-foreground" />
-              </button>
-              <button className="w-full flex items-center justify-between px-4 py-2 bg-muted border border-border rounded-md hover:bg-muted/80 hover:border-primary/50 transition-all">
-                <span className="text-primary">Open Terminal</span>
-                <Terminal className="h-4 w-4 text-muted-foreground" />
-              </button>
-              <button className="w-full flex items-center justify-between px-4 py-2 bg-muted border border-border rounded-md hover:bg-muted/80 hover:border-primary/50 transition-all">
-                <span className="text-primary">Download Project</span>
-                <Download className="h-4 w-4 text-muted-foreground" />
-              </button>
-            </div>
-          </div>
+          />
         </div>
       </div>
     </div>

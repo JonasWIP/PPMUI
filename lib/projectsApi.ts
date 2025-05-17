@@ -295,7 +295,7 @@ export class ProjectsApiClient {
    */
   public async getProjectConfig(projectName: string) {
     try {
-      const response = await fetch(`/api/projects/${projectName}`);
+      const response = await fetch(`/api/projects/${projectName}/config`);
       
       if (!response.ok) {
         const errorData = await response.json();
@@ -331,7 +331,7 @@ export class ProjectsApiClient {
     }
   ) {
     try {
-      const response = await fetch(`/api/projects/${projectName}`, {
+      const response = await fetch(`/api/projects/${projectName}/config`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
