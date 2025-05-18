@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiClient } from '@/lib/apiClient';
 import { ApiError } from '@/lib/api';
-import { 
+import {
   ChatService,
   ProjectsService,
-  GitHubService
+  GitHubService,
+  OpenAPI
 } from '@/lib/generated/api';
 import {
   Tabs,
@@ -123,8 +124,12 @@ export default function ApiTestPage() {
   useEffect(() => {
     const loadEndpoints = async () => {
       try {
-        // Initialize API client
+        // Initialize API client with proxy
         await apiClient.initialize(false);
+        
+        // Override the OpenAPI.BASE to use our proxy
+        // This ensures all API calls go through our proxy
+        OpenAPI.BASE = '/api/proxy';
         
         // Create endpoints dynamically from the service classes
         const realEndpoints: ApiEndpoint[] = [];

@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
   
   // Check if we're already on the login page or other public routes to prevent redirect loops
   const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/cookie-preferences', '/privacy', '/terms', '/impressum'];
-  const apiRoutes = ['/api/auth'];
+  const apiRoutes = ['/api/auth', '/api/proxy'];
   
   // Check for exact match on root path or startsWith for other paths
   const isPublicRoute =
@@ -102,13 +102,13 @@ export const config = {
     // Explicitly protect the dashboard route
     '/dashboard/:path*',
     
-    // Explicitly protect admin routes
-    '/api-test/:path*',
+    // Explicitly protect admin routes (temporarily removed /api-test)
     '/admin/:path*',
     
     // Match other routes except for:
     // - _next (Next.js internals)
     // - Public files (_static, robots.txt, favicon.ico, etc.)
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.svg$).*)',
+    // - API test page and proxy
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.svg$|api-test|api/proxy).*)',
   ],
 }

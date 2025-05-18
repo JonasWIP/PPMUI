@@ -64,14 +64,9 @@ export class ApiClient {
       throw new NotAuthenticatedError();
     }
 
-    // Configure the OpenAPI instance
-    // Use localhost:2020 for local development and jonasreitz.de:2020 for production
-    const isLocalDevelopment = typeof window !== 'undefined' &&
-      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-    
-    OpenAPI.BASE = isLocalDevelopment
-      ? 'http://localhost:2020'
-      : 'https://jonasreitz.de:2020';
+    // Configure the OpenAPI instance to use our proxy
+    // All API calls will be routed through the proxy which will forward them to the actual API
+    OpenAPI.BASE = '/api/proxy';
     
     // Set the token resolver function to provide the access token
     if (session?.access_token) {
