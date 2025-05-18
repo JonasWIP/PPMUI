@@ -26,8 +26,7 @@
     "supabase:functions:deploy:hello-world": "npx supabase functions deploy hello-world",
     "supabase:functions:new": "npx supabase functions new",
     "supabase:functions:list": "npx supabase functions list",
-    "supabase:functions:delete": "npx supabase functions delete",
-    "generate:api-client": "openapi --input ./developmentApi.json --output ./lib/generated --client fetch --useOptions --exportCore false --exportServices true --exportSchemas true"
+    "supabase:functions:delete": "npx supabase functions delete"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

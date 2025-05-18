@@ -14,17 +14,24 @@ type ChatInterfaceProps = {
   projectName?: string
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectName }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: `I've analyzed the project structure for ${projectName || 'your project'}. Would you like me to explain the main components?`,
+      content: `This is a placeholder message. The Development API has been deprecated.`,
       sender: 'agent',
       timestamp: new Date(Date.now() - 60000)
+    },
+    {
+      id: '2',
+      content: `Chat functionality is no longer available.`,
+      sender: 'agent',
+      timestamp: new Date(Date.now() - 30000)
     }
   ])
   const [inputValue, setInputValue] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [loading] = useState(false) // Always false since we're not making API calls
 
   // Auto-scroll to bottom of chat when messages change
   useEffect(() => {
@@ -47,20 +54,18 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectName }) => {
     
     setMessages(prev => [...prev, userMessage])
     setInputValue('')
-    setLoading(true)
     
-    // Simulate agent response after a delay
+    // Add a fixed response about deprecated functionality
     setTimeout(() => {
       const agentMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: `I'm analyzing your request regarding "${inputValue.substring(0, 30)}${inputValue.length > 30 ? '...' : ''}". What specific details would you like to know?`,
+        content: `I'm sorry, but the chat functionality has been deprecated. This is just a placeholder interface.`,
         sender: 'agent',
         timestamp: new Date()
       }
       
       setMessages(prev => [...prev, agentMessage])
-      setLoading(false)
-    }, 1500)
+    }, 500)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -79,24 +84,18 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectName }) => {
     }
     
     setMessages(prev => [...prev, userMessage])
-    setLoading(true)
     
-    // Simulate agent response after a delay
+    // Add a fixed response about deprecated functionality
     setTimeout(() => {
       const agentMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: response === 'Yes' 
-          ? `Great! Let me walk you through the main components of ${projectName || 'your project'}.`
-          : response === 'No' 
-            ? 'No problem. What would you like to work on instead?'
-            : 'I understand you need more information. What aspects are you most interested in?',
+        content: `I'm sorry, but the chat functionality has been deprecated. This is just a placeholder interface.`,
         sender: 'agent',
         timestamp: new Date()
       }
       
       setMessages(prev => [...prev, agentMessage])
-      setLoading(false)
-    }, 1000)
+    }, 500)
   }
 
   const formatTime = (date: Date) => {
@@ -105,6 +104,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectName }) => {
 
   return (
     <div className="flex flex-col h-full bg-card border border-border rounded-lg shadow-md overflow-hidden">
+      {/* Notice about deprecated functionality */}
+      <div className="bg-yellow-500/10 border-b border-yellow-500/30 text-yellow-500 px-4 py-2 text-sm">
+        <strong>Notice:</strong> Chat functionality has been deprecated. This interface shows placeholder content.
+      </div>
       {/* Chat Header */}
       <div className="bg-muted px-4 py-3 border-b border-border">
         <h2 className="text-lg font-medium text-primary">

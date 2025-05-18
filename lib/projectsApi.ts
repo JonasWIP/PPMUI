@@ -1,72 +1,38 @@
 /**
- * Projects API Client
+ * Projects API Client (Mock Implementation)
  *
- * This file provides a client for the server-side Projects API routes.
- * All API requests are made through server-side API routes for security.
+ * This file provides a mock client that returns placeholder data.
+ * The actual Development API has been deprecated.
  */
 
 import { ApiError } from './api';
-import { OpenAPI } from './generated';
 
 /**
- * Configure the OpenAPI instance for server-side use
- * This function should be used in all server-side API routes
- * to ensure consistent configuration
+ * Mock configuration function (no-op)
+ * Kept for backward compatibility
  */
 export const configureProjectsApi = () => {
-  // Set the base URL for the Projects API
-  OpenAPI.BASE = process.env.NEXT_PUBLIC_PROJECTS_API_URL || 'http://localhost:2020';
-  
-  // Get the token from environment variables
-  const token = process.env.NEXT_PUBLIC_PROJECTS_API_TOKEN || '';
-  
-  // Set the token for Bearer authentication
-  OpenAPI.TOKEN = token;
-  
-  // Add a log to help with debugging
-  console.log(`Configuring Projects API with base URL: ${OpenAPI.BASE}`);
-
-  
-  OpenAPI.WITH_CREDENTIALS = false;
-  
-  // Add custom headers including a direct Authorization header
-  // This ensures the header is sent even if the token validation fails
-  OpenAPI.HEADERS = {
-    'X-API-Source': 'server-side-route',
-    'Authorization': `Bearer ${token || 'dev-default-token'}`
-  };
+  console.log('Development API has been deprecated. Using mock implementation.');
 };
 
 /**
- * ProjectsApiClient class provides methods to interact with the Projects API
- * through server-side API routes.
+ * ProjectsApiClient class provides mock methods that return placeholder data
  */
 export class ProjectsApiClient {
   /**
-   * List all projects
+   * List all projects (mock implementation)
    */
   public async listProjects() {
-    try {
-      const response = await fetch('/api/projects');
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new ApiError(
-          response.status,
-          errorData.error || 'Failed to list projects',
-          errorData
-        );
-      }
-      
-      return await response.json();
-    } catch (error) {
-      this.handleApiError(error);
-      throw error;
-    }
+    console.log('Using mock implementation for listProjects');
+    return {
+      status: "success",
+      message: "This is a placeholder response. The Projects API has been deprecated.",
+      directories: ["example-project-1", "example-project-2", "example-project-3"]
+    };
   }
 
   /**
-   * Initialize a project
+   * Initialize a project (mock implementation)
    */
   public async initializeProject(
     projectName: string,
@@ -85,33 +51,28 @@ export class ProjectsApiClient {
       initGit?: boolean;
     }
   ) {
-    try {
-      const response = await fetch(`/api/projects/${projectName}/initialize`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+    console.log('Using mock implementation for initializeProject', { projectName, options });
+    return {
+      status: "success",
+      message: "This is a placeholder response. The Projects API has been deprecated.",
+      projectName: projectName,
+      projectPath: `/path/to/projects/${projectName}`,
+      config: options.config || {
+        projectName: projectName,
+        deployment: {
+          dev: ["npm run dev"]
         },
-        body: JSON.stringify(options),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new ApiError(
-          response.status,
-          errorData.error || 'Failed to initialize project',
-          errorData
-        );
-      }
-      
-      return await response.json();
-    } catch (error) {
-      this.handleApiError(error);
-      throw error;
-    }
+        previewUrl: "http://localhost:3000",
+      },
+      commands: options.commands || [],
+      output: [],
+      gitInitialized: options.initGit || false,
+      nextSteps: ["Project functionality has been deprecated"]
+    };
   }
 
   /**
-   * Deploy a project
+   * Deploy a project (mock implementation)
    */
   public async deployProject(
     projectName: string,
@@ -120,83 +81,56 @@ export class ProjectsApiClient {
       branch?: string;
     }
   ) {
-    try {
-      const response = await fetch(`/api/projects/${projectName}/deploy`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(options),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new ApiError(
-          response.status,
-          errorData.error || 'Failed to deploy project',
-          errorData
-        );
+    console.log('Using mock implementation for deployProject', { projectName, options });
+    return {
+      status: "success",
+      message: "This is a placeholder response. The Projects API has been deprecated.",
+      projectName: projectName,
+      gitStatus: {
+        hasChanges: false,
+        branch: options.branch || "main"
+      },
+      commit: {
+        hash: "mock-commit-hash",
+        message: options.commitMessage
+      },
+      push: {
+        success: true,
+        remote: "origin",
+        branch: options.branch || "main"
       }
-      
-      return await response.json();
-    } catch (error) {
-      this.handleApiError(error);
-      throw error;
-    }
+    };
   }
 
   /**
-   * Start a project
+   * Start a project (mock implementation)
    */
   public async startProject(projectName: string) {
-    try {
-      const response = await fetch(`/api/projects/${projectName}/start`, {
-        method: 'POST',
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new ApiError(
-          response.status,
-          errorData.error || 'Failed to start project',
-          errorData
-        );
-      }
-      
-      return await response.json();
-    } catch (error) {
-      this.handleApiError(error);
-      throw error;
-    }
+    console.log('Using mock implementation for startProject', { projectName });
+    return {
+      status: "success",
+      message: "This is a placeholder response. The Projects API has been deprecated.",
+      projectName: projectName,
+      commands: ["npm run dev"],
+      output: [],
+      duration: 0
+    };
   }
 
   /**
-   * Stop a project
+   * Stop a project (mock implementation)
    */
   public async stopProject(projectName: string) {
-    try {
-      const response = await fetch(`/api/projects/${projectName}/stop`, {
-        method: 'POST',
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new ApiError(
-          response.status,
-          errorData.error || 'Failed to stop project',
-          errorData
-        );
-      }
-      
-      return await response.json();
-    } catch (error) {
-      this.handleApiError(error);
-      throw error;
-    }
+    console.log('Using mock implementation for stopProject', { projectName });
+    return {
+      status: "success",
+      message: "This is a placeholder response. The Projects API has been deprecated.",
+      projectName: projectName
+    };
   }
 
   /**
-   * Clone a repository
+   * Clone a repository (mock implementation)
    */
   public async cloneRepository(
     options: {
@@ -205,116 +139,68 @@ export class ProjectsApiClient {
       forkMode?: boolean;
     }
   ) {
-    try {
-      const response = await fetch('/api/projects/clone', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(options),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new ApiError(
-          response.status,
-          errorData.error || 'Failed to clone repository',
-          errorData
-        );
-      }
-      
-      return await response.json();
-    } catch (error) {
-      this.handleApiError(error);
-      throw error;
-    }
+    console.log('Using mock implementation for cloneRepository', { options });
+    const projectName = options.projectName || options.repositoryUrl.split('/').pop()?.replace('.git', '') || 'example-project';
+    return {
+      status: "success",
+      message: "This is a placeholder response. The Projects API has been deprecated.",
+      projectName: projectName,
+      projectPath: `/path/to/projects/${projectName}`,
+      isFork: options.forkMode || false
+    };
   }
 
   /**
-   * Create a new project
+   * Create a new project (mock implementation)
    */
   public async createProject(
     projectName: string,
     instructions?: string
   ) {
-    try {
-      const response = await fetch('/api/projects/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          projectName,
-          instructions
-        }),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new ApiError(
-          response.status,
-          errorData.error || 'Failed to create project',
-          errorData
-        );
-      }
-      
-      return await response.json();
-    } catch (error) {
-      this.handleApiError(error);
-      throw error;
-    }
+    console.log('Using mock implementation for createProject', { projectName, instructions });
+    return {
+      status: "success",
+      message: "This is a placeholder response. The Projects API has been deprecated.",
+      projectName: projectName,
+      projectPath: `/path/to/projects/${projectName}`
+    };
   }
 
   /**
-   * Delete a project
+   * Delete a project (mock implementation)
    */
   public async deleteProject(projectName: string) {
-    try {
-      const response = await fetch(`/api/projects/${projectName}`, {
-        method: 'DELETE',
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new ApiError(
-          response.status,
-          errorData.error || 'Failed to delete project',
-          errorData
-        );
-      }
-      
-      return await response.json();
-    } catch (error) {
-      this.handleApiError(error);
-      throw error;
-    }
+    console.log('Using mock implementation for deleteProject', { projectName });
+    return {
+      status: "success",
+      message: "This is a placeholder response. The Projects API has been deprecated."
+    };
   }
 
   /**
-   * Get project configuration
+   * Get project configuration (mock implementation)
    */
   public async getProjectConfig(projectName: string) {
-    try {
-      const response = await fetch(`/api/projects/${projectName}/config`);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new ApiError(
-          response.status,
-          errorData.error || 'Failed to get project config',
-          errorData
-        );
+    console.log('Using mock implementation for getProjectConfig', { projectName });
+    return {
+      status: "success",
+      message: "This is a placeholder response. The Projects API has been deprecated.",
+      config: {
+        repoUrl: "https://github.com/example/repo.git",
+        isTemplate: false,
+        projectName: projectName,
+        deployment: {
+          dev: ["npm run dev"],
+          live: ["npm run build"]
+        },
+        previewUrl: "http://localhost:3000",
+        liveUrl: "https://example.com"
       }
-      
-      return await response.json();
-    } catch (error) {
-      this.handleApiError(error);
-      throw error;
-    }
+    };
   }
 
   /**
-   * Update project configuration
+   * Update project configuration (mock implementation)
    */
   public async updateProjectConfig(
     projectName: string,
@@ -330,29 +216,11 @@ export class ProjectsApiClient {
       liveUrl?: string;
     }
   ) {
-    try {
-      const response = await fetch(`/api/projects/${projectName}/config`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(config),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new ApiError(
-          response.status,
-          errorData.error || 'Failed to update project config',
-          errorData
-        );
-      }
-      
-      return await response.json();
-    } catch (error) {
-      this.handleApiError(error);
-      throw error;
-    }
+    console.log('Using mock implementation for updateProjectConfig', { projectName, config });
+    return {
+      status: "success",
+      message: "This is a placeholder response. The Projects API has been deprecated."
+    };
   }
 
   /**

@@ -13,6 +13,10 @@ const Development = () => {
 
   return (
     <div className="p-6 w-full h-[calc(100vh-64px)] flex flex-col">
+      {/* Notice about deprecated functionality */}
+      <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 rounded-md">
+        <strong>Notice:</strong> Development API functionality has been deprecated. This interface shows placeholder content.
+      </div>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
@@ -25,11 +29,11 @@ const Development = () => {
           </h1>
         </div>
         <div className="flex space-x-3">
-          <button className="flex items-center px-4 py-2 bg-green-500/10 border border-green-500/30 text-green-500 rounded hover:bg-green-500/20 transition-all shadow-sm">
+          <button className="flex items-center px-4 py-2 bg-green-500/10 border border-green-500/30 text-green-500/50 rounded cursor-not-allowed opacity-70 shadow-sm" disabled>
             <Play className="h-4 w-4 mr-2" />
             Run Project
           </button>
-          <Link href="/local-development" className="flex items-center px-4 py-2 bg-primary/10 border border-primary/30 text-primary rounded hover:bg-primary/20 transition-all shadow-sm" >
+          <Link href="/local-development" className="flex items-center px-4 py-2 bg-primary/10 border border-primary/30 text-primary/50 rounded cursor-not-allowed opacity-70 shadow-sm" onClick={(e) => e.preventDefault()}>
             <Terminal className="h-4 w-4 mr-2" />
             Local Dev
           </Link>

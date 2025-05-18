@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Plus, GitBranch, Github, ExternalLink, Download, Loader2 } from 'lucide-react'
 import Link from 'next/link'
-import { projectsApi } from '@/lib/projectsApi'
+// projectsApi is no longer used as we're using placeholder data
 import { useRouter } from 'next/navigation'
 
 // Define project type based on API response
@@ -22,64 +22,59 @@ type TabType = 'projects' | 'templates' | 'archived';
 
 const Projects = () => {
   const router = useRouter();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  // Use placeholder data instead of API calls
+  const [projects] = useState<Project[]>([
+    {
+      name: "example-project-1",
+      description: "Example project with placeholder data",
+      status: "Inactive",
+      lastUpdated: new Date().toISOString(),
+      isTemplate: false,
+      isArchived: false,
+      repoUrl: "https://github.com/example/repo1.git",
+      ticketsCount: 0
+    },
+    {
+      name: "example-project-2",
+      description: "Another example project with placeholder data",
+      status: "Inactive",
+      lastUpdated: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+      isTemplate: false,
+      isArchived: false,
+      repoUrl: "https://github.com/example/repo2.git",
+      ticketsCount: 0
+    },
+    {
+      name: "template-example",
+      description: "Example template project",
+      status: "Inactive",
+      lastUpdated: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+      isTemplate: true,
+      isArchived: false,
+      repoUrl: "https://github.com/example/template.git",
+      ticketsCount: 0
+    },
+    {
+      name: "archived-example",
+      description: "Example archived project",
+      status: "Inactive",
+      lastUpdated: new Date(Date.now() - 2592000000).toISOString(), // 30 days ago
+      isTemplate: false,
+      isArchived: true,
+      repoUrl: "https://github.com/example/archived.git",
+      ticketsCount: 0
+    }
+  ]);
+  const [loading] = useState<boolean>(false); // Set to false since we're using placeholder data
+  const [error] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('projects');
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        setLoading(true);
-        const data = await projectsApi.listProjects();
-        
-        console.log('API Response:', data);
-        
-        // Check if directories or projects array exists and is not empty
-        const projectsArray = data?.directories || data?.projects;
-        
-        if (!projectsArray || !Array.isArray(projectsArray)) {
-          console.error('API response does not contain a valid projects or directories array:', data);
-          setError('Invalid API response format. Please try again later.');
-          return;
-        }
-        
-        console.log('Projects from API:', projectsArray);
-        
-        // Extract projects array from the response and map to Project objects
-        const projectsList = projectsArray.map((name: string) => ({
-          name,
-          // Default values for other properties
-          description: '',
-          status: 'New',
-          lastUpdated: new Date().toISOString(),
-          isTemplate: name.startsWith('template-'),
-          isArchived: name.startsWith('archived-'),
-        })) || [];
-        
-        console.log('Mapped Projects:', projectsList);
-        
-        setProjects(projectsList);
-        setError(null);
-      } catch (err) {
-        console.error('Failed to fetch projects:', err);
-        setError('Failed to load projects. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
+  // No useEffect needed as we're using placeholder data
 
-    fetchProjects();
-  }, []);
-
-  const startProject = async (projectName: string) => {
-    try {
-      await projectsApi.startProject(projectName);
-      router.push(`/development?project=${projectName}`);
-    } catch (err) {
-      console.error('Failed to start project:', err);
-      // Could add toast notification here
-    }
+  // Mock implementation that just navigates without API call
+  const startProject = (projectName: string) => {
+    console.log('Project functionality has been deprecated:', projectName);
+    router.push(`/development?project=${projectName}`);
   };
 
   // Filter projects based on active tab
@@ -119,6 +114,10 @@ const Projects = () => {
 
   return (
     <div className="p-6 w-full">
+      {/* Notice about deprecated functionality */}
+      <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 rounded-md">
+        <strong>Notice:</strong> Project management functionality has been deprecated. The interface below shows placeholder data.
+      </div>
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold text-primary tracking-wider">
           PROJECTS<span className="text-secondary">::</span>
