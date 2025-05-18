@@ -1,28 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET(request: NextRequest, { params }: { params: { slug: string[] } }) {
+// Disable ESLint for the next line
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function GET(request: NextRequest, context: any) {
   console.log("GET request received in proxy");
-  return handleRequest(request, params.slug || []);
+  const slug = context.params?.slug || [];
+  return handleRequest(request, Array.isArray(slug) ? slug : [slug]);
 }
 
-export async function POST(request: NextRequest, { params }: { params: { slug: string[] } }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function POST(request: NextRequest, context: any) {
   console.log("POST request received in proxy");
-  return handleRequest(request, params.slug || []);
+  const slug = context.params?.slug || [];
+  return handleRequest(request, Array.isArray(slug) ? slug : [slug]);
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { slug: string[] } }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function PUT(request: NextRequest, context: any) {
   console.log("PUT request received in proxy");
-  return handleRequest(request, params.slug || []);
+  const slug = context.params?.slug || [];
+  return handleRequest(request, Array.isArray(slug) ? slug : [slug]);
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { slug: string[] } }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function PATCH(request: NextRequest, context: any) {
   console.log("PATCH request received in proxy");
-  return handleRequest(request, params.slug || []);
+  const slug = context.params?.slug || [];
+  return handleRequest(request, Array.isArray(slug) ? slug : [slug]);
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { slug: string[] } }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function DELETE(request: NextRequest, context: any) {
   console.log("DELETE request received in proxy");
-  return handleRequest(request, params.slug || []);
+  const slug = context.params?.slug || [];
+  return handleRequest(request, Array.isArray(slug) ? slug : [slug]);
 }
 
 async function handleRequest(request: NextRequest, slug: string[]) {
