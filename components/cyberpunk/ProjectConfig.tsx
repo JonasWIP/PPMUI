@@ -32,8 +32,8 @@ const ProjectConfig: React.FC<ProjectConfigProps> = ({ projectName }) => {
       try {
         setLoading(true)
         setError(null)
-        const data = await projectsApi.getProjectConfig(projectName)
-        setConfig(data)
+        const response = await projectsApi.getProjectConfig(projectName)
+        setConfig(response.config)
       } catch (err) {
         console.error('Failed to fetch project config:', err)
         setError('Failed to load project configuration. Please try again later.')

@@ -17,6 +17,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["api-client-test.ts", "lib/**/*.ts", "app/examples/api-calls/ProjectsApiExample.tsx"],
+  "include": ["lib/**/*.ts", "app/examples/api-calls/ProjectsApiExample.tsx"],
   "exclude": ["node_modules", "supabase/functions"]
 }
