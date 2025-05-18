@@ -233,39 +233,44 @@ const Projects = () => {
                   <span className="text-primary">{formatDate(project.lastUpdated)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Status:</span>
-                  <span className={
-                    project.status === 'Running' ? 'text-green-500' :
-                    project.status === 'Building' ? 'text-yellow-500' :
-                    'text-blue-500'
-                  }>
-                    {project.status || 'Setup'}
-                  </span>
+                  <span className="text-muted-foreground">Template:</span>
+                  <span className="text-primary">{project.isTemplate ? 'Yes' : 'No'}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Tickets:</span>
-                  <span className="text-primary">{project.ticketsCount || 0} open</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Repo:</span>
-                  {project.repoUrl ? (
-                    <a href={project.repoUrl} className="text-primary flex items-center" target="_blank" rel="noopener noreferrer">
-                      <Github className="h-3 w-3 mr-1" />
-                      View
+                  <span className="text-muted-foreground">Live URL:</span>
+                  {project.liveUrl ? (
+                    <a href={project.liveUrl} className="text-primary flex items-center" target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                      Visit
                     </a>
                   ) : (
                     <span className="text-muted-foreground">Not available</span>
                   )}
                 </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Status:</span>
+                  <span className={
+                    project.liveUrl ? 'text-green-500' : 'text-yellow-500'
+                  }>
+                    {project.liveUrl ? 'Available' : 'Unavailable'}
+                  </span>
+                </div>
               </div>
               <div className="flex border-t border-border">
-                <Link
-                  href={`/open-project?project=${project.name}`}
+                <button
+                  onClick={() => {
+                    if (project.repoUrl) {
+                      navigator.clipboard.writeText(project.repoUrl);
+                      // Could add a toast notification here
+                      alert('Git URL copied to clipboard!');
+                    }
+                  }}
                   className="flex-1 text-center py-3 text-sm text-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
+                  disabled={!project.repoUrl}
                 >
-                  <ExternalLink className="h-4 w-4 mr-1.5" />
-                  Open
-                </Link>
+                  <Github className="h-4 w-4 mr-1.5" />
+                  Copy Git URL
+                </button>
                 <button
                   onClick={() => startProject(project.name)}
                   className="flex-1 text-center py-3 text-sm text-secondary hover:bg-secondary/10 transition-colors border-l border-border flex items-center justify-center"
