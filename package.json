@@ -2,6 +2,7 @@
   "name": "instancetest",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "dev:turbo": "next dev --turbopack",
@@ -26,7 +27,8 @@
     "supabase:functions:deploy:hello-world": "npx supabase functions deploy hello-world",
     "supabase:functions:new": "npx supabase functions new",
     "supabase:functions:list": "npx supabase functions list",
-    "supabase:functions:delete": "npx supabase functions delete"
+    "supabase:functions:delete": "npx supabase functions delete",
+    "generate:api": "npx @openapitools/openapi-generator-cli generate -i openapi.yaml -g typescript-axios -o lib/generated/api --additional-properties=supportsES6=true,npmName=api-client,withSeparateModelsAndApi=true,modelPropertyNaming=original"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -62,6 +64,7 @@
     "@tailwindcss/postcss": "^4.1.5",
     "@tailwindcss/typography": "^0.5.16",
     "@types/js-cookie": "^3.0.6",
+    "axios": "^1.9.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -70,6 +73,7 @@
     "framer-motion": "^12.9.2",
     "input-otp": "^1.4.2",
     "js-cookie": "^3.0.5",
+    "js-yaml": "^4.1.0",
     "lucide-react": "^0.503.0",
     "next": "15.3.1",
     "next-themes": "^0.4.6",
@@ -87,6 +91,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@openapitools/openapi-generator-cli": "^2.20.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
