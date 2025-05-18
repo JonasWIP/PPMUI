@@ -270,10 +270,9 @@ const Projects = () => {
                 >
                   <Github className="h-4 w-4 mr-1.5" />
                   Copy Git URL
-                </button>
-                <button
+                </button>                <button
                   onClick={() => startProject(project.name)}
-                  className="flex-1 text-center py-3 text-sm text-secondary hover:bg-secondary/10 transition-colors border-l border-border flex items-center justify-center"
+                  className="flex-1 text-center py-3 text-sm text-primary hover:bg-primary/10 transition-colors border-l border-border flex items-center justify-center"
                 >
                   <GitBranch className="h-4 w-4 mr-1.5" />
                   Develop
