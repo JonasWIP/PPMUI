@@ -71,7 +71,7 @@ export class ApiClient {
     
     OpenAPI.BASE = isLocalDevelopment
       ? 'http://localhost:2020'
-      : 'http://jonasreitz.de:2020';
+      : 'https://jonasreitz.de:2020';
     
     // Set the token resolver function to provide the access token
     if (session?.access_token) {
