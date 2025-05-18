@@ -22,9 +22,12 @@ export async function middleware(request: NextRequest) {
     path === '/' ||
     publicRoutes.some(route => path === route || path.startsWith(`${route}/`)) ||
     apiRoutes.some(route => path.startsWith(route));
-    
-  // Allow access to public routes without Supabase validation
-  if (isPublicRoute) {
+  
+  // Check if we're on the login or register page specifically
+  const isAuthPage = path === '/login' || path === '/register';
+  
+  // For non-auth public routes, allow access without Supabase validation
+  if (isPublicRoute && !isAuthPage) {
     return response;
   }
   
@@ -60,7 +63,20 @@ export async function middleware(request: NextRequest) {
       console.error(`❌ Authentication error: ${error.message}`);
     }
 
-    if (!user) {
+    console.log(`Middleware: Path=${path}, isAuthPage=${isAuthPage}, user=${user ? 'authenticated' : 'not authenticated'}`);
+
+    // If user is authenticated but trying to access login/register pages,
+    // redirect them to the dashboard
+    if (user && isAuthPage) {
+      console.log(`Middleware: Redirecting authenticated user from ${path} to /dashboard`);
+      const url = request.nextUrl.clone();
+      url.pathname = '/dashboard';
+      return NextResponse.redirect(url);
+    }
+
+    // If user is not authenticated and trying to access a protected route,
+    // redirect to login page
+    if (!user && !isPublicRoute) {
       const url = request.nextUrl.clone();
       url.pathname = '/login';
       return NextResponse.redirect(url);
@@ -109,6 +125,6 @@ export const config = {
     // - _next (Next.js internals)
     // - Public files (_static, robots.txt, favicon.ico, etc.)
     // - API test page and proxy
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.svg$|api-test|api/proxy).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.svg$|api/proxy).*)',
   ],
 }

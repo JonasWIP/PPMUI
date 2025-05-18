@@ -12,7 +12,7 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const { refreshAuth } = useAuth();
+  const { refreshAuth, notifyAuthChange } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,8 +37,15 @@ export default function LoginForm() {
       // Refresh auth state immediately
       await refreshAuth();
       
-      // Redirect to dashboard without page refresh
-      router.push('/dashboard');
+      // Notify about auth state change in the same tab
+      notifyAuthChange();
+      
+      // Add a small delay to ensure auth state is fully updated before redirecting
+      // This helps prevent race conditions with the middleware
+      setTimeout(() => {
+        // Redirect to dashboard without page refresh
+        router.push('/dashboard');
+      }, 100);
 
     } catch (err: Error | unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to sign in';

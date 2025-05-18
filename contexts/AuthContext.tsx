@@ -35,6 +35,7 @@ type AuthContextType = {
   
   refreshAuth: () => Promise<void>;
   signOut: () => Promise<void>;
+  notifyAuthChange: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -103,12 +104,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const signOut = async () => {
     try {
+      console.log('AuthContext: Starting signOut process');
       await supabaseSignOut();
+      console.log('AuthContext: supabaseSignOut completed');
       setUser(null);
       setProfile(null);
       setUserName(null);
       setRoles([]);
-      router.push('/');
+      
+      // Notify about auth state change in the same tab
+      notifyAuthChange();
+      console.log('AuthContext: Auth state change notified, redirecting to /login');
+      
+      // Add a small delay before redirecting to ensure auth state is updated
+      setTimeout(() => {
+        console.log('AuthContext: Executing redirect to /login');
+        router.push('/login');
+      }, 100);
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -124,12 +136,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
+    // Custom event for same-tab auth state changes
+    const handleAuthChange = () => {
+      refreshAuth();
+    };
+
     window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('auth-state-changed', handleAuthChange);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('auth-state-changed', handleAuthChange);
     };
   }, []);
+
+  // Helper function to notify auth state changes within the same tab
+  const notifyAuthChange = () => {
+    window.dispatchEvent(new Event('auth-state-changed'));
+  };
 
   const value = {
     user,
@@ -146,7 +170,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     hasRole,
     
     refreshAuth,
-    signOut
+    signOut,
+    notifyAuthChange
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -383,9 +383,9 @@ export default function ApiTestPage() {
     setResult(null);
     
     try {
-      // Allow testing without authentication in development mode
+      // Ensure user is authenticated
       if (!user) {
-        console.log("No authenticated user, proceeding in development mode");
+        throw new Error("Authentication required to access this page");
       }
       
       // Initialize API client
@@ -542,6 +542,19 @@ export default function ApiTestPage() {
     );
   }
   
+  // Ensure user is authenticated
+  if (!user) {
+    return (
+      <div className="p-8">
+        <h1 className="text-2xl font-bold mb-4">API Test Console</h1>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <p className="font-bold">Authentication Required</p>
+          <p>You must be logged in as an admin to access this page.</p>
+        </div>
+      </div>
+    );
+  }
+  
   // Get unique tags from endpoints
   const tags = [...new Set(endpoints.map(e => e.tag))];
   
@@ -560,11 +573,6 @@ export default function ApiTestPage() {
         <AlertTitle>API Test Interface</AlertTitle>
         <AlertDescription>
           This console allows you to test the API endpoints. Select an endpoint, provide parameters, and execute the request to see the response.
-          {!user && (
-            <div className="mt-2 p-2 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded">
-              <strong>Note:</strong> You are not logged in. API calls will be simulated. Please log in to make real API calls.
-            </div>
-          )}
         </AlertDescription>
       </Alert>
       

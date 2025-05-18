@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Check, Moon, Paintbrush, Sun, Monitor } from "lucide-react"
+import { Check, Moon, Sun, Monitor } from "lucide-react"
 import { useCustomTheme } from "./theme-provider"
 
 import { Button } from "@/components/ui/button"
@@ -20,25 +20,17 @@ export function ThemeToggle() {
 
   // Check if we're in a dark theme
   const isDark = currentTheme.isDark || false
-
+  
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="relative">
-          {/* Show sun icon when in light mode */}
-          <Sun className={`h-[1.2rem] w-[1.2rem] transition-all ${isDark ? 'scale-0' : 'scale-100'}`} />
+          {!isDark && (
+            <Sun className="h-[1.2rem] w-[1.2rem]" />
+          )}
           
-          {/* Show moon icon when in dark mode */}
-          <Moon 
-            className={`absolute h-[1.2rem] w-[1.2rem] transition-all ${isDark ? 'scale-100' : 'scale-0'}`} 
-          />
-          
-          {/* Show paintbrush icon for custom themes */}
-          {theme !== 'default' && theme !== 'dark' && theme !== 'system' && (
-            <Paintbrush 
-              className="absolute h-[1.2rem] w-[1.2rem] opacity-40" 
-              style={{ transform: 'scale(0.85)' }}
-            />
+          {isDark && (
+            <Moon className="h-[1.2rem] w-[1.2rem]" />
           )}
           <span className="sr-only">Toggle theme</span>
         </Button>
