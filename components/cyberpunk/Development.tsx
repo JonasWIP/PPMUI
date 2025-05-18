@@ -1,22 +1,89 @@
 'use client'
 
-import React, { useState } from 'react'
-import { ArrowLeft, Terminal, Play } from 'lucide-react'
+import React, { useState, useEffect, Suspense } from 'react'
+import { ArrowLeft, Terminal, Play, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import ChatInterface from './ChatInterface'
 import PreviewPanel from './PreviewPanel'
+import { ProjectsService } from '@/lib/generated/api'
 
-const Development = () => {
-  const [projectName] = useState('PROJECT_ALPHA')
-  const [previewUrl] = useState('https://preview.example.com/demo')
-  const [liveUrl] = useState('https://live.example.com')
+// Component to handle search params
+const DevelopmentContent = () => {
+  const searchParams = useSearchParams()
+  const projectParam = searchParams.get('project')
+  
+  const [projectName] = useState(projectParam || '')
+  const [previewUrl, setPreviewUrl] = useState('')
+  const [liveUrl, setLiveUrl] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isLocalDevRunning, setIsLocalDevRunning] = useState(false)
+  const [isActionLoading, setIsActionLoading] = useState(false)
+
+  // Handler for toggling local development server
+  const handleLocalDevToggle = async () => {
+    if (!projectName) return;
+    
+    try {
+      setIsActionLoading(true);
+      
+      if (isLocalDevRunning) {
+        // Stop the local development server
+        await ProjectsService.postProjectsStop({ projectName });
+        setIsLocalDevRunning(false);
+      } else {
+        // Start the local development server
+        await ProjectsService.postProjectsStart({ projectName });
+        setIsLocalDevRunning(true);
+      }
+    } catch (err) {
+      console.error('Error toggling local development server:', err);
+      setError(`Failed to ${isLocalDevRunning ? 'stop' : 'start'} local development server`);
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchProjectConfig = async () => {
+      if (!projectName) return
+      
+      try {
+        setLoading(true)
+        const response = await ProjectsService.getProjectsConfig({ projectName })
+        
+        if (response.config) {
+          setPreviewUrl(response.config.previewUrl || '')
+          setLiveUrl(response.config.liveUrl || '')
+        }
+        
+        setLoading(false)
+      } catch (err) {
+        console.error('Error fetching project config:', err)
+        setError('Failed to load project configuration')
+        setLoading(false)
+      }
+    }
+    
+    fetchProjectConfig()
+  }, [projectName])
 
   return (
     <div className="p-6 w-full h-[calc(100vh-64px)] flex flex-col">
-      {/* Notice about deprecated functionality */}
-      <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 rounded-md">
-        <strong>Notice:</strong> Development API functionality has been deprecated. This interface shows placeholder content.
-      </div>
+      {/* Loading state */}
+      {loading && (
+        <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 text-blue-500 rounded-md">
+          Loading project configuration...
+        </div>
+      )}
+      
+      {/* Error state */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 text-red-500 rounded-md">
+          <strong>Error:</strong> {error}
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
@@ -31,12 +98,24 @@ const Development = () => {
         <div className="flex space-x-3">
           <button className="flex items-center px-4 py-2 bg-green-500/10 border border-green-500/30 text-green-500/50 rounded cursor-not-allowed opacity-70 shadow-sm" disabled>
             <Play className="h-4 w-4 mr-2" />
-            Run Project
+            Deploy
           </button>
-          <Link href="/local-development" className="flex items-center px-4 py-2 bg-primary/10 border border-primary/30 text-primary/50 rounded cursor-not-allowed opacity-70 shadow-sm" onClick={(e) => e.preventDefault()}>
-            <Terminal className="h-4 w-4 mr-2" />
-            Local Dev
-          </Link>
+          <button
+            onClick={handleLocalDevToggle}
+            disabled={isActionLoading || !projectName}
+            className={`flex items-center px-4 py-2 ${
+              isLocalDevRunning
+                ? 'bg-red-500/10 border border-red-500/30 text-red-500 hover:bg-red-500/20'
+                : 'bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20'
+            } rounded shadow-sm transition-colors ${(isActionLoading || !projectName) ? 'opacity-70 cursor-not-allowed' : ''}`}
+          >
+            {isActionLoading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Terminal className="h-4 w-4 mr-2" />
+            )}
+            {isLocalDevRunning ? 'Stop Local Dev' : 'Start Local Dev'}
+          </button>
         </div>
       </div>
       
@@ -140,6 +219,15 @@ export const NeuralInterface: React.FC<NeuralInterfaceProps> = ({
         </div>
       </div>
     </div>
+  )
+}
+
+
+const Development = () => {
+  return (
+    <Suspense fallback={<div className="p-6">Loading development environment...</div>}>
+      <DevelopmentContent />
+    </Suspense>
   )
 }
 

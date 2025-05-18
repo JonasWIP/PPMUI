@@ -1,10 +1,19 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Plus, GitBranch, Github, ExternalLink, Download, Loader2 } from 'lucide-react'
 import Link from 'next/link'
-// projectsApi is no longer used as we're using placeholder data
 import { useRouter } from 'next/navigation'
+import { ProjectsService, OpenAPI } from '@/lib/generated/api'
+import { apiClient } from '@/lib/apiClient'
+
+// Define custom interface for API response to handle mismatch
+interface ProjectsResponse {
+  status?: string;
+  message?: string;
+  projects?: string[]; // Keep for backward compatibility
+  directories?: string[]; // Current API response format
+}
 
 // Define project type based on API response
 type Project = {
@@ -16,64 +25,89 @@ type Project = {
   isArchived?: boolean;
   repoUrl?: string;
   ticketsCount?: number;
+  previewUrl?: string;
+  liveUrl?: string;
+  config?: Record<string, unknown>;
 };
 
 type TabType = 'projects' | 'templates' | 'archived';
 
 const Projects = () => {
   const router = useRouter();
-  // Use placeholder data instead of API calls
-  const [projects] = useState<Project[]>([
-    {
-      name: "example-project-1",
-      description: "Example project with placeholder data",
-      status: "Inactive",
-      lastUpdated: new Date().toISOString(),
-      isTemplate: false,
-      isArchived: false,
-      repoUrl: "https://github.com/example/repo1.git",
-      ticketsCount: 0
-    },
-    {
-      name: "example-project-2",
-      description: "Another example project with placeholder data",
-      status: "Inactive",
-      lastUpdated: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-      isTemplate: false,
-      isArchived: false,
-      repoUrl: "https://github.com/example/repo2.git",
-      ticketsCount: 0
-    },
-    {
-      name: "template-example",
-      description: "Example template project",
-      status: "Inactive",
-      lastUpdated: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-      isTemplate: true,
-      isArchived: false,
-      repoUrl: "https://github.com/example/template.git",
-      ticketsCount: 0
-    },
-    {
-      name: "archived-example",
-      description: "Example archived project",
-      status: "Inactive",
-      lastUpdated: new Date(Date.now() - 2592000000).toISOString(), // 30 days ago
-      isTemplate: false,
-      isArchived: true,
-      repoUrl: "https://github.com/example/archived.git",
-      ticketsCount: 0
-    }
-  ]);
-  const [loading] = useState<boolean>(false); // Set to false since we're using placeholder data
-  const [error] = useState<string | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('projects');
 
-  // No useEffect needed as we're using placeholder data
+  // Fetch projects from API
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setLoading(true);
+        
+        // Initialize API client
+        await apiClient.initialize(false);
+        
+        // Set API base to use our proxy
+        OpenAPI.BASE = '/api/proxy';
+        
+        // Get list of project names
+        const projectsResponse = await ProjectsService.getProjects();
+        
+        // Handle API response format (directories is the current format)
+        const projectNames = (projectsResponse as ProjectsResponse).directories ||
+                            (projectsResponse as ProjectsResponse).projects || [];
+        
+        // Fetch details for each project
+        const projectsWithDetails = await Promise.all(
+          projectNames.map(async (projectName: string) => {
+            try {
+              const configResponse = await ProjectsService.getProjectsConfig({ projectName });
+              const config = configResponse.config || {};
+              
+              return {
+                name: projectName,
+                description: `Project: ${projectName}`,
+                status: "Inactive", // Default status
+                lastUpdated: new Date().toISOString(),
+                isTemplate: config.isTemplate || false,
+                isArchived: false, // Default value
+                repoUrl: config.repoUrl,
+                ticketsCount: 0, // Default value
+                previewUrl: config.previewUrl,
+                liveUrl: config.liveUrl,
+                config: config
+              };
+            } catch (err) {
+              console.error(`Error fetching config for project ${projectName}:`, err);
+              return {
+                name: projectName,
+                description: `Project: ${projectName}`,
+                status: "Error",
+                lastUpdated: new Date().toISOString(),
+                isTemplate: false,
+                isArchived: false,
+                ticketsCount: 0
+              };
+            }
+          })
+        );
+        
+        setProjects(projectsWithDetails);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching projects:', err);
+        setError('Failed to load projects. Please try again later.');
+        setLoading(false);
+      }
+    };
 
-  // Mock implementation that just navigates without API call
+    fetchProjects();
+  }, []);
+
+  // Pass project configuration to development page
   const startProject = (projectName: string) => {
-    console.log('Project functionality has been deprecated:', projectName);
+    console.log('Starting project development:', projectName);
     router.push(`/development?project=${projectName}`);
   };
 
@@ -114,10 +148,7 @@ const Projects = () => {
 
   return (
     <div className="p-6 w-full">
-      {/* Notice about deprecated functionality */}
-      <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 rounded-md">
-        <strong>Notice:</strong> Project management functionality has been deprecated. The interface below shows placeholder data.
-      </div>
+      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold text-primary tracking-wider">
           PROJECTS<span className="text-secondary">::</span>
