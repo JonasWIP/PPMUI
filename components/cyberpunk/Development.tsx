@@ -1,8 +1,7 @@
 'use client'
 
-import React, { useState, useEffect, Suspense, useCallback, useRef } from 'react'
-import { ArrowLeft, Terminal, Play, Loader2, Server, Activity, ChevronDown, ChevronUp } from 'lucide-react'
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible'
+import React, { useState, useEffect, Suspense, useCallback } from 'react'
+import { ArrowLeft, Terminal, Play, Loader2, Server, Activity } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import ChatInterface from './ChatInterface'
@@ -30,14 +29,6 @@ const DevelopmentContent = () => {
       }>;
     };
   } | null>(null)
-  
-  // Refresh mechanism state
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const [refreshAttempts, setRefreshAttempts] = useState(0)
-  const [refreshSuccess, setRefreshSuccess] = useState(false)
-  const [refreshError, setRefreshError] = useState<string | null>(null)
-  const refreshTimerRef = useRef<NodeJS.Timeout | null>(null)
-  const maxRefreshAttempts = 30 // 30 attempts with 1-second intervals = 30 seconds timeout
 
   // Fetch project status
   const fetchProjectStatus = useCallback(async () => {
@@ -68,13 +59,9 @@ const DevelopmentContent = () => {
       if (statusData?.isRunning) {
         // Stop the local development server
         await ProjectsService.postProjectsStop({ projectName });
-        // Reset refresh state when stopping the server
-        stopRefreshCycle();
       } else {
         // Start the local development server
         await ProjectsService.postProjectsStart({ projectName });
-        // Start refresh cycle after server is started
-        startRefreshCycle();
       }
       
       // Fetch updated status after action
@@ -86,65 +73,6 @@ const DevelopmentContent = () => {
       setIsActionLoading(false);
     }
   };
-  
-  // Function to handle preview load success
-  const handlePreviewLoadSuccess = () => {
-    if (isRefreshing) {
-      setRefreshSuccess(true);
-      setIsRefreshing(false);
-      stopRefreshCycle();
-    }
-  };
-  
-  // Function to start the refresh cycle
-  const startRefreshCycle = () => {
-    // Reset refresh state
-    setIsRefreshing(true);
-    setRefreshAttempts(0);
-    setRefreshSuccess(false);
-    setRefreshError(null);
-    
-    // Clear any existing timer
-    if (refreshTimerRef.current) {
-      clearInterval(refreshTimerRef.current);
-    }
-    
-    // Start the refresh interval
-    refreshTimerRef.current = setInterval(() => {
-      setRefreshAttempts(prev => {
-        const newCount = prev + 1;
-        
-        // Check if we've reached the maximum attempts (30 second timeout)
-        if (newCount >= maxRefreshAttempts) {
-          setRefreshError('Preview refresh timed out after 30 seconds');
-          stopRefreshCycle();
-        }
-        
-        return newCount;
-      });
-    }, 1000); // Check every second
-  };
-  
-  // Function to stop the refresh cycle
-  const stopRefreshCycle = () => {
-    if (refreshTimerRef.current) {
-      clearInterval(refreshTimerRef.current);
-      refreshTimerRef.current = null;
-    }
-    setIsRefreshing(false);
-  };
-
-  // Effect to handle preview URL changes
-  useEffect(() => {
-    if (previewUrl && statusData?.isRunning) {
-      // Reset refresh state
-      setRefreshSuccess(false);
-      setRefreshError(null);
-      
-      // Start the refresh cycle when preview URL is available and project is running
-      startRefreshCycle();
-    }
-  }, [previewUrl, statusData?.isRunning]);
 
   useEffect(() => {
     const fetchProjectConfig = async () => {
@@ -177,13 +105,7 @@ const DevelopmentContent = () => {
       fetchProjectStatus()
     }, 10000) // Poll every 10 seconds
     
-    return () => {
-      clearInterval(statusInterval);
-      // Clean up refresh timer on unmount
-      if (refreshTimerRef.current) {
-        clearInterval(refreshTimerRef.current);
-      }
-    }
+    return () => clearInterval(statusInterval)
   }, [projectName])
 
   return (
@@ -233,58 +155,36 @@ const DevelopmentContent = () => {
             )}
             {statusData?.isRunning ? 'Stop Local Dev' : 'Start Local Dev'}
           </button>
-          
-          {/* Project Status Panel - Collapsible */}
-          {statusData && (
-            <Collapsible className="relative">
-              <CollapsibleTrigger className={`flex items-center px-3 py-2 rounded shadow-sm transition-colors border ${
-                statusData.isRunning
-                  ? 'bg-blue-500/10 border-blue-500/30 text-blue-500 hover:bg-blue-500/20'
-                  : 'bg-gray-500/10 border-gray-500/30 text-gray-500 hover:bg-gray-500/20'
-              }`}>
-                <Server className="h-4 w-4 mr-2" />
-                <span className="font-medium">Status:</span>
-                <span className={`ml-1 text-xs font-medium px-1.5 py-0.5 rounded ${
-                  statusData.isRunning ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
-                }`}>
-                  {statusData.isRunning ? 'RUNNING' : 'STOPPED'}
-                </span>
-                <ChevronDown className="h-3.5 w-3.5 ml-1.5 collapsible-closed" />
-                <ChevronUp className="h-3.5 w-3.5 ml-1.5 collapsible-open" />
-              </CollapsibleTrigger>
-              
-              <CollapsibleContent className="absolute right-0 top-full mt-1 z-10 w-72 bg-blue-500/10 border border-blue-500/30 text-blue-500 rounded-md p-3 shadow-lg animate-in slide-in-from-top-2 duration-200">
-                <div className="flex items-center mb-2">
-                  <Server className="h-5 w-5 mr-2" />
-                  <span className="font-semibold">Project Status:</span>
-                  <span className={`ml-2 px-2 py-0.5 rounded text-xs ${
-                    statusData.isRunning ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
-                  }`}>
-                    {statusData.isRunning ? 'RUNNING' : 'STOPPED'}
-                  </span>
-                </div>
-                
-                {statusData.isRunning && statusData.processes && (
-                  <div className="mt-2">
-                    <div className="flex items-center mb-1">
-                      <Activity className="h-4 w-4 mr-2" />
-                      <span className="text-sm">Running Processes: {statusData.processes.count}</span>
-                    </div>
-                    
-                    {statusData.processes.details && statusData.processes.details.map((process, index) => (
-                      <div key={index} className="ml-6 text-xs text-blue-400 font-mono">
-                        PID: {process.pid} - Command: {process.command}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CollapsibleContent>
-            </Collapsible>
-          )}
         </div>
       </div>
       
-      {/* Status Information - Removed from here and moved to header */}
+      {/* Status Information */}
+      {statusData && (
+        <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 text-blue-500 rounded-md">
+          <div className="flex items-center mb-2">
+            <Server className="h-5 w-5 mr-2" />
+            <span className="font-semibold">Project Status:</span>
+            <span className={`ml-2 px-2 py-0.5 rounded text-xs ${statusData.isRunning ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
+              {statusData.isRunning ? 'RUNNING' : 'STOPPED'}
+            </span>
+          </div>
+          
+          {statusData.isRunning && statusData.processes && (
+            <div className="mt-2">
+              <div className="flex items-center mb-1">
+                <Activity className="h-4 w-4 mr-2" />
+                <span className="text-sm">Running Processes: {statusData.processes.count}</span>
+              </div>
+              
+              {statusData.processes.details && statusData.processes.details.map((process, index) => (
+                <div key={index} className="ml-6 text-xs text-blue-400 font-mono">
+                  PID: {process.pid} - Command: {process.command}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       
       {/* Main Content */}
       <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden">
@@ -295,15 +195,10 @@ const DevelopmentContent = () => {
         
         {/* Preview Panel */}
         <div className="lg:w-2/3 h-full">
-          <PreviewPanel
+          <PreviewPanel 
             projectName={projectName}
             previewUrl={previewUrl}
             liveUrl={liveUrl}
-            isRefreshing={isRefreshing}
-            refreshAttempts={refreshAttempts}
-            refreshSuccess={refreshSuccess}
-            refreshError={refreshError}
-            onPreviewLoad={handlePreviewLoadSuccess}
             codeContent={`import React, { useState, useEffect } from 'react';
 import { analyzeBrainwaves } from '../utils/brainwave-analyzer';
 import { NeuralData, BrainwavePattern } from '../types';
@@ -395,51 +290,9 @@ export const NeuralInterface: React.FC<NeuralInterfaceProps> = ({
 }
 
 
-// Custom CSS for the collapsible component
-const collapsibleStyles = `
-  .collapsible-open {
-    display: none;
-  }
-  
-  [data-state="open"] .collapsible-open {
-    display: block;
-  }
-  
-  [data-state="open"] .collapsible-closed {
-    display: none;
-  }
-  
-  @keyframes slide-in-from-top-2 {
-    from {
-      opacity: 0;
-      transform: translateY(-0.5rem);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  .animate-in {
-    animation-duration: 200ms;
-    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    animation-fill-mode: both;
-  }
-  
-  .slide-in-from-top-2 {
-    animation-name: slide-in-from-top-2;
-  }
-  
-  .duration-200 {
-    animation-duration: 200ms;
-  }
-`;
-
 const Development = () => {
   return (
     <Suspense fallback={<div className="p-6">Loading development environment...</div>}>
-      {/* Add style for collapsible component */}
-      <style dangerouslySetInnerHTML={{ __html: collapsibleStyles }} />
       <DevelopmentContent />
     </Suspense>
   )

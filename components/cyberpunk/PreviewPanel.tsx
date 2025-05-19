@@ -1,64 +1,23 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { Code, Globe, Play, Ticket, RefreshCw } from 'lucide-react'
+import React, { useState } from 'react'
+import { Code, Globe, Play, Ticket } from 'lucide-react'
 
 type PreviewPanelProps = {
   projectName?: string
   previewUrl?: string
   liveUrl?: string
   codeContent?: string
-  isRefreshing?: boolean
-  refreshAttempts?: number
-  refreshSuccess?: boolean
-  refreshError?: string | null
-  onPreviewLoad?: () => void
 }
 
 type TabType = 'preview' | 'live' | 'code' | 'tickets'
-
-// Custom CSS for animations
-const fadeOutAnimation = `
-  @keyframes fadeOut {
-    0% { opacity: 1; }
-    70% { opacity: 1; }
-    100% { opacity: 0; }
-  }
-  .animate-fade-out {
-    animation: fadeOut 3s forwards;
-  }
-`;
 
 const PreviewPanel: React.FC<PreviewPanelProps> = ({
   projectName = 'Project',
   previewUrl = 'https://preview.example.com/demo',
   liveUrl = 'https://live.example.com',
-  codeContent,
-  isRefreshing = false,
-  refreshAttempts = 0,
-  refreshSuccess = false,
-  refreshError = null,
-  onPreviewLoad
+  codeContent
 }) => {
-  // Add custom animation styles
-  useEffect(() => {
-    // Check if the style element already exists
-    const existingStyle = document.getElementById('preview-panel-animations');
-    if (!existingStyle) {
-      const style = document.createElement('style');
-      style.id = 'preview-panel-animations';
-      style.innerHTML = fadeOutAnimation;
-      document.head.appendChild(style);
-      
-      // Clean up on unmount
-      return () => {
-        const styleToRemove = document.getElementById('preview-panel-animations');
-        if (styleToRemove) {
-          document.head.removeChild(styleToRemove);
-        }
-      };
-    }
-  }, []);
   const [activeTab, setActiveTab] = useState<TabType>('preview')
 
   const renderTabContent = () => {
@@ -70,63 +29,14 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
               <span className="text-muted-foreground">URL:</span>
               <span className="ml-2 text-primary font-mono">{previewUrl}</span>
             </div>
-            <div className="flex-1 bg-white relative">
+            <div className="flex-1 bg-white">
               {previewUrl ? (
-                <>
-                  <iframe
-                    src={previewUrl}
-                    className="w-full h-full border-0"
-                    title="Preview"
-                    sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
-                    onLoad={onPreviewLoad}
-                  />
-                  
-                  {/* Refresh overlay */}
-                  {isRefreshing && (
-                    <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white">
-                      <RefreshCw className="h-8 w-8 animate-spin mb-4" />
-                      <div className="text-lg font-medium mb-2">Refreshing Preview</div>
-                      <div className="text-sm text-white/80 mb-4">
-                        Waiting for local server to respond...
-                      </div>
-                      <div className="bg-white/20 rounded-full h-2 w-64 overflow-hidden">
-                        <div
-                          className="bg-primary h-full transition-all duration-300 ease-in-out"
-                          style={{ width: `${Math.min((refreshAttempts || 0) / 30 * 100, 100)}%` }}
-                        ></div>
-                      </div>
-                      <div className="text-xs mt-2 text-white/70">
-                        {refreshAttempts} / 30 seconds
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Success message */}
-                  {refreshSuccess && !isRefreshing && (
-                    <div className="absolute top-4 right-4 bg-green-500/20 border border-green-500/30 text-green-300 rounded-md p-3 max-w-xs animate-fade-out">
-                      <div className="flex items-center">
-                        <div className="mr-2">✓</div>
-                        <div>Preview loaded successfully!</div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Refresh error message */}
-                  {refreshError && !isRefreshing && (
-                    <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white">
-                      <div className="bg-red-500/20 border border-red-500/30 text-red-300 rounded-md p-4 max-w-md">
-                        <div className="font-medium mb-2">Preview Error</div>
-                        <div className="text-sm">{refreshError}</div>
-                        <button
-                          className="mt-4 px-3 py-1 bg-red-500/20 border border-red-500/30 text-red-300 rounded hover:bg-red-500/30 transition-colors text-sm"
-                          onClick={() => window.location.reload()}
-                        >
-                          Reload Page
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </>
+                <iframe 
+                  src={previewUrl}
+                  className="w-full h-full border-0"
+                  title="Preview"
+                  sandbox="allow-same-origin allow-scripts"
+                />
               ) : (
                 <div className="h-full flex items-center justify-center text-muted-foreground">
                   No preview URL configured
