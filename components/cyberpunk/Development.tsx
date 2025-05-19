@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, Suspense, useCallback, useRef } from 'react'
-import { ArrowLeft, Terminal, Play, Loader2, Server, Activity, ChevronDown, ChevronUp } from 'lucide-react'
+import { ArrowLeft, Terminal, Play, Loader2, Server, Activity, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react'
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
@@ -37,6 +37,7 @@ const DevelopmentContent = () => {
   const [refreshSuccess, setRefreshSuccess] = useState(false)
   const [refreshError, setRefreshError] = useState<string | null>(null)
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const iframeRef = useRef<HTMLIFrameElement | null>(null)
   const maxRefreshAttempts = 30 // 30 attempts with 1-second intervals = 30 seconds timeout
 
   // Fetch project status
@@ -109,6 +110,11 @@ const DevelopmentContent = () => {
       clearInterval(refreshTimerRef.current);
     }
     
+    // Refresh the iframe content immediately
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      iframeRef.current.contentWindow.location.reload();
+    }
+    
     // Start the refresh interval
     refreshTimerRef.current = setInterval(() => {
       setRefreshAttempts(prev => {
@@ -145,6 +151,46 @@ const DevelopmentContent = () => {
       startRefreshCycle();
     }
   }, [previewUrl, statusData?.isRunning]);
+  
+  // Manual refresh function that can be triggered by user
+  const handleManualRefresh = () => {
+    if (previewUrl && statusData?.isRunning) {
+      // Reset refresh state
+      setIsRefreshing(true);
+      setRefreshAttempts(0);
+      setRefreshSuccess(false);
+      setRefreshError(null);
+      
+      // Clear any existing timer
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+      }
+      
+      // Refresh the iframe content immediately
+      if (iframeRef.current && iframeRef.current.contentWindow) {
+        iframeRef.current.contentWindow.location.reload();
+      }
+      
+      // Start the refresh interval
+      refreshTimerRef.current = setInterval(() => {
+        setRefreshAttempts(prev => {
+          const newCount = prev + 1;
+          
+          // Check if we've reached the maximum attempts (30 second timeout)
+          if (newCount >= maxRefreshAttempts) {
+            setRefreshError('Preview refresh timed out after 30 seconds');
+            if (refreshTimerRef.current) {
+              clearInterval(refreshTimerRef.current);
+              refreshTimerRef.current = null;
+            }
+            setIsRefreshing(false);
+          }
+          
+          return newCount;
+        });
+      }, 1000); // Check every second
+    }
+  };
 
   useEffect(() => {
     const fetchProjectConfig = async () => {
@@ -234,6 +280,17 @@ const DevelopmentContent = () => {
             {statusData?.isRunning ? 'Stop Local Dev' : 'Start Local Dev'}
           </button>
           
+          {statusData?.isRunning && (
+            <button
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+              className={`flex items-center px-4 py-2 bg-blue-500/10 border border-blue-500/30 text-blue-500 hover:bg-blue-500/20 rounded shadow-sm transition-colors ${isRefreshing ? 'opacity-70 cursor-not-allowed' : ''}`}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Refresh Preview
+            </button>
+          )}
+          
           {/* Project Status Panel - Collapsible */}
           {statusData && (
             <Collapsible className="relative">
@@ -304,6 +361,12 @@ const DevelopmentContent = () => {
             refreshSuccess={refreshSuccess}
             refreshError={refreshError}
             onPreviewLoad={handlePreviewLoadSuccess}
+            onRefresh={() => {
+              if (iframeRef.current && iframeRef.current.contentWindow) {
+                iframeRef.current.contentWindow.location.reload();
+              }
+            }}
+            iframeRef={iframeRef}
             codeContent={`import React, { useState, useEffect } from 'react';
 import { analyzeBrainwaves } from '../utils/brainwave-analyzer';
 import { NeuralData, BrainwavePattern } from '../types';
