@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, Suspense } from 'react'
+import React, { useState, useEffect, Suspense, useCallback } from 'react'
 import { ArrowLeft, Terminal, Play, Loader2, Server, Activity } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
@@ -31,7 +31,7 @@ const DevelopmentContent = () => {
   } | null>(null)
 
   // Fetch project status
-  const fetchProjectStatus = async () => {
+  const fetchProjectStatus = useCallback(async () => {
     if (!projectName) return;
     
     try {
@@ -47,7 +47,7 @@ const DevelopmentContent = () => {
       console.error('Error fetching project status:', err);
       setError('Failed to fetch project status');
     }
-  };
+  }, [projectName]);
 
   // Handler for toggling local development server
   const handleLocalDevToggle = async () => {
