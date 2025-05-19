@@ -13,8 +13,6 @@ type PreviewPanelProps = {
   refreshSuccess?: boolean
   refreshError?: string | null
   onPreviewLoad?: () => void
-  onRefresh?: () => void
-  iframeRef?: React.RefObject<HTMLIFrameElement | null>
 }
 
 type TabType = 'preview' | 'live' | 'code' | 'tickets'
@@ -40,9 +38,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
   refreshAttempts = 0,
   refreshSuccess = false,
   refreshError = null,
-  onPreviewLoad,
-  onRefresh,
-  iframeRef
+  onPreviewLoad
 }) => {
   // Add custom animation styles
   useEffect(() => {
@@ -78,7 +74,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
               {previewUrl ? (
                 <>
                   <iframe
-                    ref={iframeRef}
                     src={previewUrl}
                     className="w-full h-full border-0"
                     title="Preview"
@@ -124,12 +119,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                         <div className="text-sm">{refreshError}</div>
                         <button
                           className="mt-4 px-3 py-1 bg-red-500/20 border border-red-500/30 text-red-300 rounded hover:bg-red-500/30 transition-colors text-sm"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (onRefresh) {
-                              onRefresh();
-                            }
-                          }}
+                          onClick={() => window.location.reload()}
                         >
                           Reload Page
                         </button>
