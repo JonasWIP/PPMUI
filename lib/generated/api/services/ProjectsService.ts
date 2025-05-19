@@ -887,4 +887,45 @@ export class ProjectsService {
             },
         });
     }
+    /**
+     * Get project status
+     * Check if a project is currently running and get information about its processes
+     * @returns any Project status retrieved successfully
+     * @throws ApiError
+     */
+    public static getProjectsStatus({
+        projectName,
+    }: {
+        /**
+         * Name of the project to check status
+         */
+        projectName: string,
+    }): CancelablePromise<{
+        status?: string;
+        message?: string;
+        projectName?: string;
+        isRunning?: boolean;
+        processes?: {
+            count?: number;
+            details?: Array<{
+                pid?: number;
+                command?: string;
+            }>;
+        };
+    }> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/projects/{projectName}/status',
+            path: {
+                'projectName': projectName,
+            },
+            errors: {
+                400: `Bad request`,
+                401: `Unauthorized`,
+                403: `Forbidden`,
+                404: `Not found`,
+                500: `Internal server error`,
+            },
+        });
+    }
 }

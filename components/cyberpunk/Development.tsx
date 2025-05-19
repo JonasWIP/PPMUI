@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, Suspense } from 'react'
-import { ArrowLeft, Terminal, Play, Loader2 } from 'lucide-react'
+import { ArrowLeft, Terminal, Play, Loader2, Server, Activity } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import ChatInterface from './ChatInterface'
@@ -18,8 +18,36 @@ const DevelopmentContent = () => {
   const [liveUrl, setLiveUrl] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isLocalDevRunning, setIsLocalDevRunning] = useState(false)
   const [isActionLoading, setIsActionLoading] = useState(false)
+  const [statusData, setStatusData] = useState<{
+    isRunning: boolean;
+    processes?: {
+      count?: number;
+      details?: Array<{
+        pid?: number;
+        command?: string;
+      }>;
+    };
+  } | null>(null)
+
+  // Fetch project status
+  const fetchProjectStatus = async () => {
+    if (!projectName) return;
+    
+    try {
+      const response = await ProjectsService.getProjectsStatus({ projectName });
+      
+      if (response) {
+        setStatusData({
+          isRunning: response.isRunning || false,
+          processes: response.processes
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching project status:', err);
+      setError('Failed to fetch project status');
+    }
+  };
 
   // Handler for toggling local development server
   const handleLocalDevToggle = async () => {
@@ -28,18 +56,19 @@ const DevelopmentContent = () => {
     try {
       setIsActionLoading(true);
       
-      if (isLocalDevRunning) {
+      if (statusData?.isRunning) {
         // Stop the local development server
         await ProjectsService.postProjectsStop({ projectName });
-        setIsLocalDevRunning(false);
       } else {
         // Start the local development server
         await ProjectsService.postProjectsStart({ projectName });
-        setIsLocalDevRunning(true);
       }
+      
+      // Fetch updated status after action
+      await fetchProjectStatus();
     } catch (err) {
       console.error('Error toggling local development server:', err);
-      setError(`Failed to ${isLocalDevRunning ? 'stop' : 'start'} local development server`);
+      setError(`Failed to ${statusData?.isRunning ? 'stop' : 'start'} local development server`);
     } finally {
       setIsActionLoading(false);
     }
@@ -58,6 +87,9 @@ const DevelopmentContent = () => {
           setLiveUrl(response.config.liveUrl || '')
         }
         
+        // Fetch project status after config is loaded
+        await fetchProjectStatus()
+        
         setLoading(false)
       } catch (err) {
         console.error('Error fetching project config:', err)
@@ -67,6 +99,13 @@ const DevelopmentContent = () => {
     }
     
     fetchProjectConfig()
+    
+    // Set up polling for status updates
+    const statusInterval = setInterval(() => {
+      fetchProjectStatus()
+    }, 10000) // Poll every 10 seconds
+    
+    return () => clearInterval(statusInterval)
   }, [projectName])
 
   return (
@@ -104,7 +143,7 @@ const DevelopmentContent = () => {
             onClick={handleLocalDevToggle}
             disabled={isActionLoading || !projectName}
             className={`flex items-center px-4 py-2 ${
-              isLocalDevRunning
+              statusData?.isRunning
                 ? 'bg-red-500/10 border border-red-500/30 text-red-500 hover:bg-red-500/20'
                 : 'bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20'
             } rounded shadow-sm transition-colors ${(isActionLoading || !projectName) ? 'opacity-70 cursor-not-allowed' : ''}`}
@@ -114,10 +153,38 @@ const DevelopmentContent = () => {
             ) : (
               <Terminal className="h-4 w-4 mr-2" />
             )}
-            {isLocalDevRunning ? 'Stop Local Dev' : 'Start Local Dev'}
+            {statusData?.isRunning ? 'Stop Local Dev' : 'Start Local Dev'}
           </button>
         </div>
       </div>
+      
+      {/* Status Information */}
+      {statusData && (
+        <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 text-blue-500 rounded-md">
+          <div className="flex items-center mb-2">
+            <Server className="h-5 w-5 mr-2" />
+            <span className="font-semibold">Project Status:</span>
+            <span className={`ml-2 px-2 py-0.5 rounded text-xs ${statusData.isRunning ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
+              {statusData.isRunning ? 'RUNNING' : 'STOPPED'}
+            </span>
+          </div>
+          
+          {statusData.isRunning && statusData.processes && (
+            <div className="mt-2">
+              <div className="flex items-center mb-1">
+                <Activity className="h-4 w-4 mr-2" />
+                <span className="text-sm">Running Processes: {statusData.processes.count}</span>
+              </div>
+              
+              {statusData.processes.details && statusData.processes.details.map((process, index) => (
+                <div key={index} className="ml-6 text-xs text-blue-400 font-mono">
+                  PID: {process.pid} - Command: {process.command}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       
       {/* Main Content */}
       <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden">

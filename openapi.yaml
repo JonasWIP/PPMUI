@@ -3349,7 +3349,9 @@ paths:
       tags:
         - Projects
       summary: Start a project
-      description: Start a project by running the development commands specified in its config.jaison file
+      description: >-
+        Start a project by running the development commands specified in its config.jaison file. If the project is
+        already running, returns the current status instead of restarting it.
       parameters:
         - name: projectName
           in: path
@@ -3359,7 +3361,7 @@ paths:
             type: string
       responses:
         '200':
-          description: Project started successfully
+          description: Project started successfully or already running
           content:
             application/json:
               schema:
@@ -3404,6 +3406,28 @@ paths:
                   duration:
                     type: number
                     example: 10000
+                  isAlreadyRunning:
+                    type: boolean
+                    example: false
+                    description: Indicates if the project was already running
+                  processes:
+                    type: object
+                    description: Only present if the project was already running
+                    properties:
+                      count:
+                        type: number
+                        example: 1
+                      details:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            pid:
+                              type: number
+                              example: 12345
+                            command:
+                              type: string
+                              example: npm run dev
         '400':
           description: Bad request
           content:
@@ -3499,6 +3523,121 @@ paths:
                   projectName:
                     type: string
                     example: my-project
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: An error occurred
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: An error occurred
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: An error occurred
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: An error occurred
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: An error occurred
+  /projects/{projectName}/status:
+    get:
+      tags:
+        - Projects
+      summary: Get project status
+      description: Check if a project is currently running and get information about its processes
+      parameters:
+        - name: projectName
+          in: path
+          required: true
+          description: Name of the project to check status
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Project status retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Operation completed successfully
+                  projectName:
+                    type: string
+                    example: my-project
+                  isRunning:
+                    type: boolean
+                    example: true
+                  processes:
+                    type: object
+                    properties:
+                      count:
+                        type: number
+                        example: 1
+                      details:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            pid:
+                              type: number
+                              example: 12345
+                            command:
+                              type: string
+                              example: npm run dev
         '400':
           description: Bad request
           content:

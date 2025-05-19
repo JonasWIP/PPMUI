@@ -28,7 +28,7 @@
     "supabase:functions:new": "npx supabase functions new",
     "supabase:functions:list": "npx supabase functions list",
     "supabase:functions:delete": "npx supabase functions delete",
-    "generate:api": "npx @openapitools/openapi-generator-cli generate -i openapi.yaml -g typescript-axios -o lib/generated/api --additional-properties=supportsES6=true,npmName=api-client,withSeparateModelsAndApi=true,modelPropertyNaming=original"
+    "generate:api": "node generate-api.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
