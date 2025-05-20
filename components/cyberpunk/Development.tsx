@@ -8,6 +8,19 @@ import ChatInterface from './ChatInterface'
 import PreviewPanel from './PreviewPanel'
 import { ProjectsService } from '@/lib/generated/api'
 
+// Define types for statusData and process
+interface ProcessDetail {
+  pid?: number;
+  command?: string;
+}
+interface StatusData {
+  isRunning: boolean;
+  processes?: {
+    count?: number;
+    details?: ProcessDetail[];
+  };
+}
+
 // Component to handle search params
 const DevelopmentContent = () => {
   const searchParams = useSearchParams()
@@ -19,16 +32,7 @@ const DevelopmentContent = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isActionLoading, setIsActionLoading] = useState(false)
-  const [statusData, setStatusData] = useState<{
-    isRunning: boolean;
-    processes?: {
-      count?: number;
-      details?: Array<{
-        pid?: number;
-        command?: string;
-      }>;
-    };
-  } | null>(null)
+  const [statusData, setStatusData] = useState<StatusData | null>(null)
 
   // Fetch project status
   const fetchProjectStatus = useCallback(async () => {
@@ -106,7 +110,7 @@ const DevelopmentContent = () => {
     }, 10000) // Poll every 10 seconds
     
     return () => clearInterval(statusInterval)
-  }, [projectName])
+  }, [projectName, fetchProjectStatus])
 
   return (
     <div className="p-6 w-full h-[calc(100vh-64px)] flex flex-col">
@@ -263,7 +267,7 @@ export const NeuralInterface: React.FC<NeuralInterfaceProps> = ({
   )
 }
 
-const StatusPanelButton = ({ statusData }: { statusData: any }) => {
+const StatusPanelButton = ({ statusData }: { statusData: StatusData | null }) => {
   const [expanded, setExpanded] = useState(false);
   return (
     <div className="relative">
@@ -275,20 +279,20 @@ const StatusPanelButton = ({ statusData }: { statusData: any }) => {
       >
         <Server className="h-5 w-5" />
       </button>
-      {expanded && (
+      {expanded && statusData && (
         <div className="absolute right-0 mt-2 w-72 bg-white border border-border rounded-lg shadow-lg z-10 p-4 text-sm">
           <div className="flex items-center mb-2">
             <Server className="h-5 w-5 mr-2" />
             <span className="font-semibold">Project Status:</span>
-            <span className={`ml-2 px-2 py-0.5 rounded text-xs ${statusData?.isRunning ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>{statusData?.isRunning ? 'RUNNING' : 'STOPPED'}</span>
+            <span className={`ml-2 px-2 py-0.5 rounded text-xs ${statusData.isRunning ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>{statusData.isRunning ? 'RUNNING' : 'STOPPED'}</span>
           </div>
-          {statusData?.isRunning && statusData?.processes && (
+          {statusData.isRunning && statusData.processes && (
             <div className="mt-2">
               <div className="flex items-center mb-1">
                 <Activity className="h-4 w-4 mr-2" />
                 <span className="text-sm">Running Processes: {statusData.processes.count}</span>
               </div>
-              {statusData.processes.details && statusData.processes.details.map((process: any, index: number) => (
+              {statusData.processes.details && statusData.processes.details.map((process: ProcessDetail, index: number) => (
                 <div key={index} className="ml-6 text-xs text-blue-400 font-mono">
                   PID: {process.pid} - Command: {process.command}
                 </div>
