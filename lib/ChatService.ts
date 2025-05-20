@@ -13,6 +13,7 @@ export type ChatMessage = {
   images?: string[];
   timestamp: string;
   sender: 'user' | 'ai';
+  isQuestion?: boolean;
 };
 
 export type ChatConfiguration = {
@@ -66,10 +67,18 @@ export class ChatService {
         taskId, 
         requestBody: { text, images } 
       });
-      if (res.status !== 'success' || !res.messageId) {
+      
+      // Check if the response has an error status
+      if (res.status === 'error') {
         throw new Error(res.message || 'Failed to send message');
       }
-      return res.messageId;
+      
+      // If we don't have a messageId but the status is success, that's fine
+      if (res.status === 'success') {
+        return res.messageId || '';
+      }
+      
+      throw new Error('Unexpected response status');
     } catch (error) {
       console.error('Error sending message:', error);
       throw error;
@@ -91,6 +100,7 @@ export class ChatService {
         images?: string[];
         timestamp?: string;
         sender?: 'user' | 'ai';
+        isQuestion?: boolean;
       }) => ({
         id: msg.id || '',
         taskId: msg.taskId || taskId,
@@ -98,6 +108,7 @@ export class ChatService {
         images: msg.images || [],
         timestamp: msg.timestamp || new Date().toISOString(),
         sender: msg.sender || 'user',
+        isQuestion: msg.isQuestion || false
       }));
     } catch (error) {
       console.error('Error fetching chat history:', error);

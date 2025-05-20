@@ -4,6 +4,11 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Send, ThumbsUp, ThumbsDown, HelpCircle, Plus, RefreshCw } from 'lucide-react'
 import { ChatService, ChatMessage, ChatTask } from '@/lib/ChatService'
 
+interface QuestionMessage {
+  question: string;
+  suggest: string[];
+}
+
 const ChatInterface: React.FC = () => {
   const [chats, setChats] = useState<ChatTask[]>([])
   const [activeChatId, setActiveChatId] = useState<string | null>(null)
@@ -13,6 +18,7 @@ const ChatInterface: React.FC = () => {
   const [loadingMessages, setLoadingMessages] = useState(false)
   const [sending, setSending] = useState(false)
   const [creating, setCreating] = useState(false)
+  const [selectedSuggestions, setSelectedSuggestions] = useState<Set<string>>(new Set())
   const chatContainerRef = useRef<HTMLDivElement>(null)
 
   // Load chat histories on mount
@@ -23,7 +29,7 @@ const ChatInterface: React.FC = () => {
   // Load messages when active chat changes
   useEffect(() => {
     if (activeChatId) {
-      fetchMessages(activeChatId)
+      fetchMessages(activeChatId, true)
       ChatService.setActiveChat(activeChatId)
     } else {
       setMessages([])
@@ -36,6 +42,17 @@ const ChatInterface: React.FC = () => {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
     }
   }, [messages])
+
+  // Poll for new messages every 2 seconds
+  useEffect(() => {
+    if (!activeChatId) return;
+
+    const interval = setInterval(() => {
+      fetchMessages(activeChatId, false);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [activeChatId]);
 
   async function fetchChats() {
     setLoadingChats(true)
@@ -53,8 +70,10 @@ const ChatInterface: React.FC = () => {
     }
   }
 
-  async function fetchMessages(chatId: string) {
-    setLoadingMessages(true)
+  async function fetchMessages(chatId: string, showLoading: boolean = false) {
+    if (showLoading) {
+      setLoadingMessages(true)
+    }
     try {
       const msgs = await ChatService.getChatHistory(chatId)
       setMessages(msgs)
@@ -62,7 +81,9 @@ const ChatInterface: React.FC = () => {
       setMessages([])
       // TODO: handle error
     } finally {
-      setLoadingMessages(false)
+      if (showLoading) {
+        setLoadingMessages(false)
+      }
     }
   }
 
@@ -78,11 +99,14 @@ const ChatInterface: React.FC = () => {
         setActiveChatId(newChatId)
       } else {
         await ChatService.sendMessage(activeChatId, text)
-        await fetchMessages(activeChatId)
+        // Don't wait for fetchMessages to complete
+        fetchMessages(activeChatId, false)
       }
       setInputValue('')
-    } catch {
-      // TODO: handle error
+    } catch (error) {
+      console.error('Error sending message:', error)
+      // TODO: Show error to user
+      // For now, just log it
     } finally {
       setSending(false)
     }
@@ -98,6 +122,7 @@ const ChatInterface: React.FC = () => {
       // Just clear the current chat without creating a new one
       setActiveChatId(null)
       setMessages([])
+      setSelectedSuggestions(new Set())
     } catch {
       // TODO: handle error
     } finally {
@@ -108,6 +133,72 @@ const ChatInterface: React.FC = () => {
   function formatTime(timestamp: string) {
     const date = new Date(timestamp)
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }
+
+  function parseQuestionMessage(text: string): QuestionMessage | null {
+    try {
+      const parsed = JSON.parse(text) as QuestionMessage;
+      if (typeof parsed.question === 'string' && Array.isArray(parsed.suggest)) {
+        return parsed;
+      }
+    } catch {
+      // Not a valid question message
+    }
+    return null;
+  }
+
+  function handleSuggestionClick(messageId: string, suggestion: string) {
+    if (selectedSuggestions.has(messageId)) return;
+    
+    setSelectedSuggestions(prev => new Set([...prev, messageId]));
+    handleSendMessage(suggestion);
+  }
+
+  function renderMessage(message: ChatMessage) {
+    if (message.isQuestion) {
+      const questionData = parseQuestionMessage(message.text);
+      if (questionData) {
+        return (
+          <div className="max-w-[80%] rounded-lg px-4 py-2 bg-secondary/20 border border-secondary/30 text-foreground">
+            <div className="text-sm font-medium mb-2">{questionData.question}</div>
+            <div className="flex flex-wrap gap-2">
+              {questionData.suggest.map((suggestion, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleSuggestionClick(message.id, suggestion)}
+                  disabled={selectedSuggestions.has(message.id)}
+                  className={`px-3 py-1.5 rounded text-sm transition-all ${
+                    selectedSuggestions.has(message.id)
+                      ? 'bg-muted/50 text-muted-foreground cursor-not-allowed'
+                      : 'bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20'
+                  }`}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+            <div className="text-xs text-muted-foreground mt-2 text-right">
+              {formatTime(message.timestamp)}
+            </div>
+          </div>
+        );
+      }
+    }
+
+    return (
+      <div 
+        className={`max-w-[80%] rounded-lg px-4 py-2 ${
+          message.sender === 'user' 
+            ? 'bg-primary/20 border border-primary/30 text-primary' 
+            : 'bg-secondary/20 border border-secondary/30 text-foreground'
+        }`}
+      >
+        <div className="text-sm">{message.text}</div>
+        <div className="text-xs text-muted-foreground mt-1 text-right">
+          {formatTime(message.timestamp)}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -163,18 +254,7 @@ const ChatInterface: React.FC = () => {
               key={message.id} 
               className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div 
-                className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                  message.sender === 'user' 
-                    ? 'bg-primary/20 border border-primary/30 text-primary' 
-                    : 'bg-secondary/20 border border-secondary/30 text-foreground'
-                }`}
-              >
-                <div className="text-sm">{message.text}</div>
-                <div className="text-xs text-muted-foreground mt-1 text-right">
-                  {formatTime(message.timestamp)}
-                </div>
-              </div>
+              {renderMessage(message)}
             </div>
           ))
         )}

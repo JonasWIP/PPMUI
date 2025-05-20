@@ -6,7 +6,8 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import ChatInterface from './ChatInterface'
 import PreviewPanel from './PreviewPanel'
-import { ProjectsService } from '@/lib/generated/api'
+import { ProjectsService, OpenAPI } from '@/lib/generated/api'
+import { apiClient } from '@/lib/apiClient'
 
 // Define types for statusData and process
 interface ProcessDetail {
@@ -78,20 +79,54 @@ const DevelopmentContent = () => {
     }
   };
 
+  // State to track if API client is initialized
+  const [apiInitialized, setApiInitialized] = useState(false)
+
+  // Initialize API client first
   useEffect(() => {
+    const initializeApi = async () => {
+      try {
+        // Initialize API client
+        await apiClient.initialize(false)
+        
+        // Set API base to use our proxy
+        OpenAPI.BASE = '/api/proxy'
+        
+        // Mark API as initialized
+        setApiInitialized(true)
+      } catch (err) {
+        console.error('Error initializing API client:', err)
+        setError('Failed to initialize API client')
+      }
+    }
+    
+    initializeApi()
+  }, [])
+
+  // Only fetch project config after API is initialized
+  useEffect(() => {
+    // Skip if API is not initialized yet
+    if (!apiInitialized) {
+      return
+    }
+    
     const fetchProjectConfig = async () => {
-      if (!projectName) return
+      if (!projectName) {
+        return
+      }
       
       try {
         setLoading(true)
         const response = await ProjectsService.getProjectsConfig({ projectName })
         
         if (response.config) {
+          console.log('Setting preview/live URLs from config')
           setPreviewUrl(response.config.previewUrl || '')
           setLiveUrl(response.config.liveUrl || '')
         }
         
         // Fetch project status after config is loaded
+        console.log('Fetching project status')
         await fetchProjectStatus()
         
         setLoading(false)
@@ -102,6 +137,7 @@ const DevelopmentContent = () => {
       }
     }
     
+    console.log('useEffect for fetchProjectConfig running with projectName:', projectName)
     fetchProjectConfig()
     
     // Set up polling for status updates
@@ -110,7 +146,7 @@ const DevelopmentContent = () => {
     }, 10000) // Poll every 10 seconds
     
     return () => clearInterval(statusInterval)
-  }, [projectName, fetchProjectStatus])
+  }, [apiInitialized, projectName, fetchProjectStatus])
 
   return (
     <div className="p-6 w-full h-[calc(100vh-64px)] flex flex-col">
@@ -168,7 +204,7 @@ const DevelopmentContent = () => {
       <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden">
         {/* Chat Interface */}
         <div className="lg:w-1/3 h-full">
-          <ChatInterface projectName={projectName} />
+          <ChatInterface />
         </div>
         
         {/* Preview Panel */}
