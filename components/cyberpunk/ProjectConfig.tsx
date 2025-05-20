@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Save, Loader2, AlertCircle } from 'lucide-react'
-import { projectsApi } from '@/lib/projectsApi'
+import { ProjectsService } from '@/lib/generated/api/services/ProjectsService'
 
 type ProjectConfigProps = {
   projectName: string
@@ -32,8 +32,12 @@ const ProjectConfig: React.FC<ProjectConfigProps> = ({ projectName }) => {
       try {
         setLoading(true)
         setError(null)
-        const response = await projectsApi.getProjectConfig(projectName)
-        setConfig(response.config)
+        const response = await ProjectsService.getProjectsConfig({ projectName })
+        if (response.config) {
+          setConfig(response.config)
+        } else {
+          setConfig({})
+        }
       } catch (err) {
         console.error('Failed to fetch project config:', err)
         setError('Failed to load project configuration. Please try again later.')
@@ -138,7 +142,7 @@ const ProjectConfig: React.FC<ProjectConfigProps> = ({ projectName }) => {
       setError(null)
       setSaveSuccess(false)
       
-      await projectsApi.updateProjectConfig(projectName, config)
+      await ProjectsService.putProjectsConfig({ projectName, requestBody: config })
       
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)

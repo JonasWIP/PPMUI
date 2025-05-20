@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { projectsApi } from '@/lib/projectsApi';
+import { ProjectsService } from '@/lib/generated/api/services/ProjectsService';
 import { ApiError } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,7 +25,7 @@ export default function ProjectsApiExample() {
       // You can override it if needed with: projectsApi.setApiKey('custom-api-key');
       
       // Call the Projects API to list all projects
-      const response = await projectsApi.listProjects();
+      const response = await ProjectsService.getProjects();
       setProjects(response.directories || []);
     } catch (err) {
       // Handle API errors
