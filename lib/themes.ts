@@ -59,8 +59,8 @@ export const defaultTheme: ThemeDefinition = {
     popoverForeground: "224 71.4% 4.1%",
     primary: "220.9 39.3% 11%",
     primaryForeground: "210 20% 98%",
-    secondary: "220 14.3% 95.9%",
-    secondaryForeground: "220.9 39.3% 11%",
+    secondary: "220 14.3% 80%",
+    secondaryForeground: "220.9 39.3% 20%",
     muted: "220 14.3% 95.9%",
     mutedForeground: "220 8.9% 46.1%",
     accent: "220 14.3% 95.9%",
@@ -99,7 +99,7 @@ export const darkTheme: ThemeDefinition = {
     popoverForeground: "210 20% 98%",
     primary: "210 20% 98%",
     primaryForeground: "220.9 39.3% 11%",
-    secondary: "215 27.9% 16.9%",
+    secondary: "215 27.9% 35%",
     secondaryForeground: "210 20% 98%",
     muted: "215 27.9% 16.9%",
     mutedForeground: "217.9 10.6% 64.9%",
@@ -139,8 +139,8 @@ export const blueSapphireTheme: ThemeDefinition = {
     popoverForeground: "212 80% 20%",
     primary: "212 80% 35%",
     primaryForeground: "210 40% 98%",
-    secondary: "210 40% 90%",
-    secondaryForeground: "212 80% 35%",
+    secondary: "210 40% 75%",
+    secondaryForeground: "212 80% 30%",
     muted: "210 40% 96%",
     mutedForeground: "212 50% 40%",
     accent: "199 80% 40%",
@@ -179,8 +179,8 @@ export const forestGreenTheme: ThemeDefinition = {
     popoverForeground: "125 50% 15%",
     primary: "135 50% 30%",
     primaryForeground: "120 40% 98%",
-    secondary: "120 20% 90%",
-    secondaryForeground: "135 50% 30%",
+    secondary: "120 20% 75%",
+    secondaryForeground: "135 50% 25%",
     muted: "120 20% 95%",
     mutedForeground: "125 30% 40%",
     accent: "150 60% 35%",
@@ -204,8 +204,6 @@ export const forestGreenTheme: ThemeDefinition = {
   radius: "0.25rem",
 };
 
-
-
 // Modern dark theme
 export const modernDarkTheme: ThemeDefinition = {
   name: "modern-dark",
@@ -221,7 +219,7 @@ export const modernDarkTheme: ThemeDefinition = {
     popoverForeground: "215 20.2% 65.1%",
     primary: "210 40% 98%",
     primaryForeground: "222.2 47.4% 1.2%",
-    secondary: "222.2 47.4% 11.2%",
+    secondary: "222.2 47.4% 30%",
     secondaryForeground: "210 40% 98%",
     muted: "223 47% 11%",
     mutedForeground: "215.4 16.3% 56.9%",

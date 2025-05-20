@@ -181,7 +181,7 @@ const Projects = () => {
           <span className="text-primary/90">LIST</span>
         </h1>
         <div className="flex space-x-3">
-          <button className="flex items-center px-4 py-2 bg-secondary/20 border border-secondary/30 text-secondary rounded hover:bg-secondary/30 transition-all shadow-sm" onClick={() => setShowImportModal(true)}>
+          <button className="flex items-center px-4 py-2 bg-secondary/50 border border-secondary/50 text-primary rounded hover:bg-secondary/50 transition-all shadow-sm" onClick={() => setShowImportModal(true)}>
             <Download className="h-4 w-4 mr-2" />
             Import Project
           </button>
