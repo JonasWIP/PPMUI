@@ -28,14 +28,25 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
             <div className="px-4 py-2 bg-muted border-b border-border flex items-center text-sm">
               <span className="text-muted-foreground">URL:</span>
               <span className="ml-2 text-primary font-mono">{previewUrl}</span>
+              <button
+                className="ml-4 px-2 py-1 text-xs bg-primary/10 border border-primary/30 text-primary rounded hover:bg-primary/20 transition-all"
+                onClick={() => {
+                  const iframe = document.getElementById('preview-iframe') as HTMLIFrameElement | null;
+                  if (iframe) iframe.src = iframe.src;
+                }}
+                title="Reload Preview"
+              >
+                Reload
+              </button>
             </div>
             <div className="flex-1 bg-white">
               {previewUrl ? (
                 <iframe 
+                  id="preview-iframe"
                   src={previewUrl}
                   className="w-full h-full border-0"
                   title="Preview"
-                  sandbox="allow-same-origin allow-scripts"
+                  sandbox="allow-same-origin allow-scripts allow-forms"
                 />
               ) : (
                 <div className="h-full flex items-center justify-center text-muted-foreground">

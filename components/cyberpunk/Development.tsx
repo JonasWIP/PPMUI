@@ -155,36 +155,10 @@ const DevelopmentContent = () => {
             )}
             {statusData?.isRunning ? 'Stop Local Dev' : 'Start Local Dev'}
           </button>
+          {/* Expandable Status Button */}
+          <StatusPanelButton statusData={statusData} />
         </div>
       </div>
-      
-      {/* Status Information */}
-      {statusData && (
-        <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 text-blue-500 rounded-md">
-          <div className="flex items-center mb-2">
-            <Server className="h-5 w-5 mr-2" />
-            <span className="font-semibold">Project Status:</span>
-            <span className={`ml-2 px-2 py-0.5 rounded text-xs ${statusData.isRunning ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
-              {statusData.isRunning ? 'RUNNING' : 'STOPPED'}
-            </span>
-          </div>
-          
-          {statusData.isRunning && statusData.processes && (
-            <div className="mt-2">
-              <div className="flex items-center mb-1">
-                <Activity className="h-4 w-4 mr-2" />
-                <span className="text-sm">Running Processes: {statusData.processes.count}</span>
-              </div>
-              
-              {statusData.processes.details && statusData.processes.details.map((process, index) => (
-                <div key={index} className="ml-6 text-xs text-blue-400 font-mono">
-                  PID: {process.pid} - Command: {process.command}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
       
       {/* Main Content */}
       <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden">
@@ -289,6 +263,43 @@ export const NeuralInterface: React.FC<NeuralInterfaceProps> = ({
   )
 }
 
+const StatusPanelButton = ({ statusData }: { statusData: any }) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="relative">
+      <button
+        className={`flex items-center px-2 py-2 border rounded-full transition-colors ${statusData?.isRunning ? 'bg-green-500/10 border-green-500/30 text-green-500' : 'bg-red-500/10 border-red-500/30 text-red-500'}`}
+        title="Show Project Status"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+      >
+        <Server className="h-5 w-5" />
+      </button>
+      {expanded && (
+        <div className="absolute right-0 mt-2 w-72 bg-white border border-border rounded-lg shadow-lg z-10 p-4 text-sm">
+          <div className="flex items-center mb-2">
+            <Server className="h-5 w-5 mr-2" />
+            <span className="font-semibold">Project Status:</span>
+            <span className={`ml-2 px-2 py-0.5 rounded text-xs ${statusData?.isRunning ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>{statusData?.isRunning ? 'RUNNING' : 'STOPPED'}</span>
+          </div>
+          {statusData?.isRunning && statusData?.processes && (
+            <div className="mt-2">
+              <div className="flex items-center mb-1">
+                <Activity className="h-4 w-4 mr-2" />
+                <span className="text-sm">Running Processes: {statusData.processes.count}</span>
+              </div>
+              {statusData.processes.details && statusData.processes.details.map((process: any, index: number) => (
+                <div key={index} className="ml-6 text-xs text-blue-400 font-mono">
+                  PID: {process.pid} - Command: {process.command}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Development = () => {
   return (

@@ -38,6 +38,10 @@ const Projects = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('projects');
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importUrl, setImportUrl] = useState('');
+  const [importLoading, setImportLoading] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
 
   // Fetch projects from API
   useEffect(() => {
@@ -146,6 +150,28 @@ const Projects = () => {
     hasError: !!error
   });
 
+  // Add importProject function
+  const importProject = async () => {
+    setImportLoading(true);
+    setImportError(null);
+    try {
+      // Call the Project Service to import/clone
+      await ProjectsService.postProjectsClone({ requestBody: { repositoryUrl: importUrl } });
+      setShowImportModal(false);
+      setImportUrl('');
+      // Refresh project list
+      window.location.reload();
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'message' in err && typeof (err as { message?: string }).message === 'string') {
+        setImportError((err as { message: string }).message);
+      } else {
+        setImportError('Failed to import project.');
+      }
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
   return (
     <div className="p-6 w-full">
       {/* Header */}
@@ -155,7 +181,7 @@ const Projects = () => {
           <span className="text-primary/90">LIST</span>
         </h1>
         <div className="flex space-x-3">
-          <button className="flex items-center px-4 py-2 bg-secondary/20 border border-secondary/30 text-secondary rounded hover:bg-secondary/30 transition-all shadow-sm">
+          <button className="flex items-center px-4 py-2 bg-secondary/20 border border-secondary/30 text-secondary rounded hover:bg-secondary/30 transition-all shadow-sm" onClick={() => setShowImportModal(true)}>
             <Download className="h-4 w-4 mr-2" />
             Import Project
           </button>
@@ -280,6 +306,42 @@ const Projects = () => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+      {/* Import Project Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-card border border-border rounded-lg shadow-lg p-6 w-full max-w-md">
+            <h2 className="text-lg font-bold mb-4 text-primary">Import Project from Git</h2>
+            <label className="block text-base font-medium text-primary mb-2">Git Repository URL</label>
+            <input
+              type="text"
+              className="w-full border-2 border-primary/60 focus:border-primary focus:ring-2 focus:ring-primary rounded px-3 py-2 mb-3 text-foreground bg-white placeholder:text-muted-foreground"
+              placeholder="Enter Git repository URL..."
+              value={importUrl}
+              onChange={e => setImportUrl(e.target.value)}
+              disabled={importLoading}
+              style={{ color: '#222', background: '#fff' }}
+            />
+            {importError && <div className="text-destructive text-sm mb-2">{importError}</div>}
+            <div className="flex justify-end space-x-2">
+              <button
+                className="px-4 py-2 bg-muted border border-border rounded text-muted-foreground hover:bg-muted/80"
+                onClick={() => setShowImportModal(false)}
+                disabled={importLoading}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-primary border border-primary text-white rounded hover:bg-primary/90 flex items-center"
+                onClick={importProject}
+                disabled={importLoading || !importUrl.trim()}
+              >
+                {importLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+                Import
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -7,7 +7,6 @@ import {
   MessageSquare,
   Ticket,
   UserCircle,
-  Code,
 } from 'lucide-react'
 import { useCustomTheme } from '@/components/ui/theme-provider'
 
@@ -47,16 +46,6 @@ const Layout: React.FC<{
           >
             <FolderKanban className="mr-3 h-5 w-5" />
             <span>Projects</span>
-          </Link>
-          <Link href="/development"
-            className={`flex items-center p-3 my-1 rounded-md transition-all ${
-              pathname === '/development'
-                ? 'bg-muted text-primary border border-primary/50 shadow-sm'
-                : 'hover:bg-muted hover:text-primary'
-            }`}
-          >
-            <Code className="mr-3 h-5 w-5" />
-            <span>Development</span>
           </Link>
           <Link href="/chat"
             className={`flex items-center p-3 my-1 rounded-md transition-all ${
