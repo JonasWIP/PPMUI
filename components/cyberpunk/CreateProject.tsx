@@ -4,10 +4,9 @@ import React, { useState, useEffect } from 'react'
 import { ArrowLeft, Code, Loader2, AlertCircle, Check } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { projectsApi } from '@/lib/projectsApi'
 import { ProjectsService, OpenAPI } from '@/lib/generated/api'
 import { apiClient } from '@/lib/apiClient'
-
+import { ChatService } from '@/lib/ChatService'
 // Define template types
 type Template = {
   id: string
@@ -144,7 +143,7 @@ const CreateProject = () => {
       })
       
       // Call API to create project
-      await projectsApi.createProject(projectName, instructions)
+      await ChatService.createChat({ text: `Create a new project with the following instructions: ${instructions}` })
       
       // Navigate to projects page on success
       router.push('/projects')
@@ -443,12 +442,13 @@ const CreateProject = () => {
             setLoading(true)
             setError(null)
             try {
-              // Create a new project/task with the prompt as the description
-              await projectsApi.createProject(
-                projectName || 'prompt-project',
-                JSON.stringify({ description: prompt, fromPrompt: true })
-              )
+              const newChatId = await ChatService.createChat({ text: prompt })
+              if (!newChatId) {
+                throw new Error('Failed to create chat session')
+              }
               router.push('/projects')
+               
+              
             } catch {
               setError('Failed to create project from prompt.')
             } finally {
