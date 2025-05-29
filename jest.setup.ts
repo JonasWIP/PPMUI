@@ -1,9 +1,32 @@
 import '@testing-library/jest-dom';
 
-// Mock React.act for React 19 compatibility
+// Fix React.act compatibility for React 19 with React Testing Library
+// React Testing Library expects React.act to be available but React 19
+// doesn't export it by default in the testing environment
+import React, { act } from 'react';
+
+// Define global interface extension for React
+declare global {
+  interface Global {
+    React: typeof React;
+  }
+}
+
+// Ensure React.act is available globally for React Testing Library
+(global as Global).React = React;
+(global as Global).React.act = act;
+
+// Also mock it in the React module to ensure compatibility
 jest.mock('react', () => ({
   ...jest.requireActual('react'),
-  act: jest.fn((fn) => fn()),
+  act: jest.requireActual('react').act || function(callback: () => unknown) {
+    // Fallback implementation if act is not available
+    const result = callback();
+    if (result && typeof result === 'object' && result !== null && 'then' in result) {
+      return result as Promise<unknown>;
+    }
+    return Promise.resolve();
+  },
 }));
 
 // Mock Next.js environment variables
