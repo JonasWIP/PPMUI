@@ -30,10 +30,27 @@ const ChatInterface: React.FC = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const dividerRef = useRef<HTMLDivElement>(null)
 
+  // Define fetchChats function
+  const fetchChats = useCallback(async () => {
+    setLoadingChats(true)
+    try {
+      const chatList = await ChatService.listChats()
+      setChats(chatList)
+      // Auto-select the first chat if none selected
+      if (!activeChatId && chatList.length > 0) {
+        setActiveChatId(chatList[0].id)
+      }
+    } catch {
+      // TODO: handle error
+    } finally {
+      setLoadingChats(false)
+    }
+  }, [activeChatId])
+
   // Load chat histories on mount
   useEffect(() => {
     fetchChats()
-  }, [])
+  }, [fetchChats])
 
   // Load messages when active chat changes
   useEffect(() => {
@@ -92,21 +109,6 @@ const ChatInterface: React.FC = () => {
     return () => clearInterval(interval);
   }, [activeChatId]);
 
-  async function fetchChats() {
-    setLoadingChats(true)
-    try {
-      const chatList = await ChatService.listChats()
-      setChats(chatList)
-      // Auto-select the first chat if none selected
-      if (!activeChatId && chatList.length > 0) {
-        setActiveChatId(chatList[0].id)
-      }
-    } catch {
-      // TODO: handle error
-    } finally {
-      setLoadingChats(false)
-    }
-  }
 
   async function fetchMessages(chatId: string, showLoading: boolean = false) {
     if (showLoading) {

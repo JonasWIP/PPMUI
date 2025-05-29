@@ -120,7 +120,7 @@ export default function LoginForm() {
         } 
       />
 
-      <form className="space-y-6" onSubmit={handleSubmit}>
+      <form className="space-y-6" onSubmit={handleSubmit} data-testid="login-form">
         <div className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="email" className="block text-sm font-medium">

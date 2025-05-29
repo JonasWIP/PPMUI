@@ -121,9 +121,9 @@ const DevelopmentContent = () => {
       // Clear form
       setCommitMessage('')
       setDeployBranch('')
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error deploying project:', err)
-      setDeployError(err.message || 'Failed to deploy project')
+      setDeployError(err instanceof Error ? err.message : 'Failed to deploy project')
     } finally {
       setIsDeploying(false)
     }
