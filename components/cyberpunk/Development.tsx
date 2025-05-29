@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, Suspense, useCallback } from 'react'
-import { ArrowLeft, Terminal, Play, Loader2, Server, Activity } from 'lucide-react'
+import { ArrowLeft, Terminal, Play, Loader2, Server, Activity, X } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import ChatInterface from './ChatInterface'
@@ -34,6 +34,12 @@ const DevelopmentContent = () => {
   const [error, setError] = useState<string | null>(null)
   const [isActionLoading, setIsActionLoading] = useState(false)
   const [statusData, setStatusData] = useState<StatusData | null>(null)
+  const [isDeploying, setIsDeploying] = useState(false)
+  const [showDeployModal, setShowDeployModal] = useState(false)
+  const [commitMessage, setCommitMessage] = useState('')
+  const [deployBranch, setDeployBranch] = useState('')
+  const [deploySuccess, setDeploySuccess] = useState<string | null>(null)
+  const [deployError, setDeployError] = useState<string | null>(null)
 
   // Fetch project status
   const fetchProjectStatus = useCallback(async () => {
@@ -78,6 +84,60 @@ const DevelopmentContent = () => {
       setIsActionLoading(false);
     }
   };
+
+  // Handler for deploy button click
+  const handleDeployClick = () => {
+    setShowDeployModal(true)
+    setCommitMessage('')
+    setDeployBranch('')
+    setDeploySuccess(null)
+    setDeployError(null)
+  }
+
+  // Handler for deploy submission
+  const handleDeploySubmit = async () => {
+    if (!projectName || !commitMessage.trim()) return
+
+    try {
+      setIsDeploying(true)
+      setDeployError(null)
+      
+      const requestBody: { commitMessage: string; branch?: string } = {
+        commitMessage: commitMessage.trim()
+      }
+      
+      if (deployBranch.trim()) {
+        requestBody.branch = deployBranch.trim()
+      }
+      
+      const response = await ProjectsService.postProjectsDeploy({
+        projectName,
+        requestBody
+      })
+      
+      setDeploySuccess(response.message || 'Deployment completed successfully!')
+      setShowDeployModal(false)
+      
+      // Clear form
+      setCommitMessage('')
+      setDeployBranch('')
+    } catch (err: any) {
+      console.error('Error deploying project:', err)
+      setDeployError(err.message || 'Failed to deploy project')
+    } finally {
+      setIsDeploying(false)
+    }
+  }
+
+  // Handler for closing deploy modal
+  const handleCloseDeployModal = () => {
+    if (!isDeploying) {
+      setShowDeployModal(false)
+      setCommitMessage('')
+      setDeployBranch('')
+      setDeployError(null)
+    }
+  }
 
   // State to track if API client is initialized
   const [apiInitialized, setApiInitialized] = useState(false)
@@ -175,7 +235,15 @@ const DevelopmentContent = () => {
           </h1>
         </div>
         <div className="flex space-x-3">
-          <button className="flex items-center px-4 py-2 bg-green-500/10 border border-green-500/30 text-green-500/50 rounded cursor-not-allowed opacity-70 shadow-sm" disabled>
+          <button
+            onClick={handleDeployClick}
+            disabled={!projectName || loading}
+            className={`flex items-center px-4 py-2 ${
+              !projectName || loading
+                ? 'bg-green-500/10 border border-green-500/30 text-green-500/50 cursor-not-allowed opacity-70'
+                : 'bg-green-500/10 border border-green-500/30 text-green-500 hover:bg-green-500/20'
+            } rounded shadow-sm transition-colors`}
+          >
             <Play className="h-4 w-4 mr-2" />
             Deploy
           </button>
@@ -299,6 +367,104 @@ export const NeuralInterface: React.FC<NeuralInterfaceProps> = ({
           />
         </div>
       </div>
+
+      {/* Deploy Modal */}
+      {showDeployModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card border border-border rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-primary">Deploy Project</h3>
+              <button
+                onClick={handleCloseDeployModal}
+                disabled={isDeploying}
+                className="text-muted-foreground hover:text-foreground disabled:opacity-50"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="commitMessage" className="block text-sm font-medium text-foreground mb-2">
+                  Commit Message *
+                </label>
+                <textarea
+                  id="commitMessage"
+                  value={commitMessage}
+                  onChange={(e) => setCommitMessage(e.target.value)}
+                  placeholder="Describe your changes..."
+                  className="w-full bg-muted border border-input rounded-md px-3 py-2 text-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 resize-none"
+                  rows={3}
+                  disabled={isDeploying}
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="deployBranch" className="block text-sm font-medium text-foreground mb-2">
+                  Branch (optional)
+                </label>
+                <input
+                  id="deployBranch"
+                  type="text"
+                  value={deployBranch}
+                  onChange={(e) => setDeployBranch(e.target.value)}
+                  placeholder="Leave empty for current branch"
+                  className="w-full bg-muted border border-input rounded-md px-3 py-2 text-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30"
+                  disabled={isDeploying}
+                />
+              </div>
+              
+              {deployError && (
+                <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-500 rounded-md text-sm">
+                  {deployError}
+                </div>
+              )}
+              
+              <div className="flex space-x-3 pt-2">
+                <button
+                  onClick={handleCloseDeployModal}
+                  disabled={isDeploying}
+                  className="flex-1 px-4 py-2 bg-muted border border-border text-foreground rounded hover:bg-muted/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeploySubmit}
+                  disabled={!commitMessage.trim() || isDeploying}
+                  className="flex-1 flex items-center justify-center px-4 py-2 bg-green-500/10 border border-green-500/30 text-green-500 rounded hover:bg-green-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isDeploying ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Deploying...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-4 w-4 mr-2" />
+                      Deploy
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Deploy Success Message */}
+      {deploySuccess && (
+        <div className="fixed top-4 right-4 bg-green-500/10 border border-green-500/30 text-green-500 rounded-lg p-4 shadow-lg z-50">
+          <div className="flex items-center">
+            <div className="text-sm font-medium">{deploySuccess}</div>
+            <button
+              onClick={() => setDeploySuccess(null)}
+              className="ml-3 text-green-500/70 hover:text-green-500"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

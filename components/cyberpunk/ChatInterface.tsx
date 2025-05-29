@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Send, ThumbsUp, ThumbsDown, HelpCircle, Plus, RefreshCw } from 'lucide-react'
 import { ChatService, ChatMessage, ChatTask } from '@/lib/ChatService'
 
@@ -20,6 +20,7 @@ const ChatInterface: React.FC = () => {
   const [creating, setCreating] = useState(false)
   const [selectedSuggestions, setSelectedSuggestions] = useState<Set<string>>(new Set())
   const chatContainerRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // Load chat histories on mount
   useEffect(() => {
@@ -111,6 +112,34 @@ const ChatInterface: React.FC = () => {
       setSending(false)
     }
   }
+
+  // Auto-resize textarea function
+  const adjustTextareaHeight = useCallback(() => {
+    const textarea = textareaRef.current
+    if (textarea) {
+      // Reset height to calculate new height
+      textarea.style.height = 'auto'
+      
+      // Calculate new height with constraints
+      const scrollHeight = textarea.scrollHeight
+      const minHeight = 40 // Minimum height (roughly 1 line)
+      const maxHeight = 120 // Maximum height (roughly 5 lines)
+      
+      const newHeight = Math.min(Math.max(scrollHeight, minHeight), maxHeight)
+      textarea.style.height = `${newHeight}px`
+    }
+  }, [])
+
+  // Handle input changes
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputValue(e.target.value)
+    adjustTextareaHeight()
+  }, [adjustTextareaHeight])
+
+  // Adjust height when input value changes
+  useEffect(() => {
+    adjustTextareaHeight()
+  }, [inputValue, adjustTextareaHeight])
 
   async function handleQuickResponse(response: string) {
     await handleSendMessage(response)
@@ -284,10 +313,11 @@ const ChatInterface: React.FC = () => {
       
       {/* Chat Input */}
       <div className="px-4 py-3 border-t border-border">
-        <div className="flex items-center">
+        <div className="flex items-end">
           <textarea
+            ref={textareaRef}
             value={inputValue}
-            onChange={e => setInputValue(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault()
@@ -295,14 +325,14 @@ const ChatInterface: React.FC = () => {
               }
             }}
             placeholder="Type a message..."
-            className="flex-1 bg-muted border border-input rounded-md px-4 py-2 text-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 resize-none"
-            rows={1}
+            className="flex-1 bg-muted border border-input rounded-md px-4 py-2 text-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 resize-none overflow-y-auto min-h-[40px] max-h-[120px]"
+            style={{ height: '40px' }}
             disabled={sending}
           />
           <button
             onClick={() => handleSendMessage(inputValue)}
             disabled={!inputValue.trim() || sending}
-            className="ml-2 p-2 bg-primary/20 border border-primary/30 text-primary rounded hover:bg-primary/30 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="ml-2 p-2 bg-primary/20 border border-primary/30 text-primary rounded hover:bg-primary/30 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed self-end mb-0.5"
           >
             <Send className="h-5 w-5" />
           </button>
